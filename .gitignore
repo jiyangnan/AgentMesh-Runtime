@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+*.egg-info/
+runtime/*.jsonl
+state/*.jsonl
+state/checkpoints/
+
+# 运行时数据（不含敏感信息，但不应进 repo）
+state/rehydrate-snapshot.json
+state/startup-context.txt
+state/episodic.db

@@ -1,0 +1,21 @@
+{
+  "goal_id": "ars-demo-001",
+  "name": "Demo autonomous loop",
+  "goal": "Demonstrate a bounded autonomous loop runtime.",
+  "success_criteria": [
+    "loop runs to a terminal state",
+    "state is serializable"
+  ],
+  "constraints": [
+    "use default policy only"
+  ],
+  "non_goals": [],
+  "risk_level": "low",
+  "external_side_effects": false,
+  "escalation_points": [],
+  "abort_conditions": [],
+  "max_iterations": 3,
+  "max_consecutive_failures": 2,
+  "owner": "user",
+  "created_at": "2026-04-29T00:00:00Z"
+}

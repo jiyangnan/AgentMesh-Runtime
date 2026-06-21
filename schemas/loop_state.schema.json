@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/agent-reinforcement-system/loop_state.schema.json",
+  "title": "LoopState",
+  "type": "object",
+  "required": [
+    "loop_id",
+    "goal_id",
+    "status",
+    "iteration",
+    "current_step",
+    "last_observation",
+    "working_hypotheses",
+    "selected_action",
+    "verification_plan",
+    "verification_result",
+    "blockers",
+    "open_questions",
+    "needs_human_input",
+    "consecutive_failures",
+    "memory_write_required",
+    "updated_at"
+  ],
+  "properties": {
+    "loop_id": { "type": "string", "minLength": 1 },
+    "goal_id": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["initialized", "active", "waiting_human", "blocked", "done", "aborted"]
+    },
+    "iteration": { "type": "integer", "minimum": 0 },
+    "current_step": {
+      "type": "string",
+      "enum": ["observe", "orient", "decide", "act", "verify", "record"]
+    },
+    "last_observation": { "type": "string" },
+    "working_hypotheses": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "selected_action": { "type": "string" },
+    "verification_plan": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "verification_result": {
+      "type": "string",
+      "enum": ["pass", "fail", "unknown"]
+    },
+    "blockers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "needs_human_input": { "type": "boolean" },
+    "consecutive_failures": { "type": "integer", "minimum": 0 },
+    "last_error": {
+      "type": ["string", "null"],
+      "default": null
+    },
+    "memory_write_required": { "type": "boolean" },
+    "next_iteration_hint": {
+      "type": ["string", "null"],
+      "default": null
+    },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

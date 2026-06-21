@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xiaonangua-cli"
+version = "0.1.0"
+description = "xiaonangua CLI: first-principles runtime, HA episodic memory, and autonomous loop"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "jiyangnan" }
+]
+dependencies = [
+  "neo4j>=5.20.0"
+]
+
+[project.scripts]
+xng = "xng:main"
+
+[tool.setuptools]
+py-modules = ["xng", "episode_ingest", "unified_memory_recall", "neo4j_recall", "autonomous_loop", "sync_state", "sync_backfill", "checkpoint_store", "startup_rehydrate", "vector_store"]
+
+[tool.setuptools.package-dir]
+"" = "src"
