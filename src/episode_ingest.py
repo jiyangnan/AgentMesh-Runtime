@@ -25,6 +25,24 @@ NEO4J_PASSWORD = os.getenv("ARS_NEO4J_PASSWORD", "password")
 
 SESSION_BASE = os.getenv("ARS_SESSION_BASE", os.path.expanduser("~/.openclaw/agents"))
 MEMORY_DB = os.getenv("ARS_MEMORY_DB", os.path.expanduser("~/.openclaw/memory/main.sqlite"))
+
+
+def _discover_agent_dirs(session_base: str) -> list[str]:
+    """Return agent names found under ``session_base`` whose layout is
+    ``<session_base>/<agent>/sessions/``.
+
+    The previous version hard-coded the operator's local agent roster
+    (``["main", "growth", "invest"]``). Auto-discovery lets the package
+    work for any operator without configuration.
+    """
+    if not os.path.isdir(session_base):
+        return []
+    return [
+        name for name in sorted(os.listdir(session_base))
+        if os.path.isdir(os.path.join(session_base, name, "sessions"))
+    ]
+
+
 LEDGER_KIND_SESSION = "session"
 LEDGER_KIND_EVENT = "event"
 LEDGER_KIND_LOOP_RECORD = "loop_record"
@@ -41,31 +59,21 @@ TOPIC_KEYWORDS = {
     "x.com": "twitter", "产品": "product", "独立开发": "indie-dev",
     "openclaw": "openclaw", "agent": "agent", "claude": "claude",
     "gemini": "gemini", "ollama": "ollama", "embedding": "embedding",
-    "blue": "blue-music", "音乐": "music",
 }
 
+# Generic, public-facing entity catalogue. Operators can extend this dict at
+# runtime (see docs) to teach the ingest layer their own people / products /
+# tools without modifying the package source.
 KNOWN_ENTITIES = {
-    "白羊武士": ("白羊武士", "person"),
-    "Aries Warrior": ("白羊武士", "person"),
-    "ferdinand6205": ("白羊武士", "person"),
-    "小南瓜": ("小南瓜", "agent"),
-    "小瓜": ("小南瓜", "agent"),
-    "Samantha": ("Samantha", "person"),
-    "盖伦": ("盖伦", "person"),
     "Neo4j": ("Neo4j", "technology"),
-    "OpenClaw": ("OpenClaw", "technology"),
-    "BotLearn": ("BotLearn", "product"),
     "Ollama": ("Ollama", "technology"),
     "Claude Code": ("Claude Code", "tool"),
     "Codex": ("Codex", "tool"),
-    "SOUL.md": ("SOUL.md", "file"),
     "MEMORY.md": ("MEMORY.md", "file"),
     "AGENTS.md": ("AGENTS.md", "file"),
     "Telegram": ("Telegram", "channel"),
     "Discord": ("Discord", "channel"),
     "Feishu": ("Feishu", "channel"),
-    "First-Principles-Only": ("First-Principles-Only", "concept"),
-    "Hybrid-Vector-Graph": ("Hybrid-Vector-Graph", "concept"),
 }
 
 ENTITY_STOPWORDS = {
@@ -531,7 +539,7 @@ def trigger_idle_check(idle_minutes=5, current_session_id=None):
     """Scan all sessions, ingest those idle for > idle_minutes."""
     now_ts = time.time()
     ingested = []
-    for agent in ["main", "growth", "invest"]:
+    for agent in _discover_agent_dirs(SESSION_BASE):
         sessions_dir = f"{SESSION_BASE}/{agent}/sessions"
         if not os.path.exists(sessions_dir):
             continue
@@ -584,12 +592,16 @@ def _detect_channel(session_id, agent):
 # ────────────────────────────────────────────────────────────────────────────
 def trigger_ending_phrase(session_key):
     """Called when user says an ending phrase. Ingest that session immediately."""
-    # session_key format: agent:main:discord:default:direct:1024267179727794207
+    # session_key format: agent:<agent>:<channel>:<scope>:<route>:<sid>
     parts = session_key.split(":")
-    agent = "main"
+    known_agents = _discover_agent_dirs(SESSION_BASE)
+    agent = known_agents[0] if known_agents else None
     for p in parts:
-        if p in ("main", "growth", "invest"):
+        if p in known_agents:
             agent = p
+            break
+    if agent is None:
+        return None
     channel = "discord"
     for p in parts:
         if p in ("discord", "telegram", "feishu", "signal"):
@@ -639,7 +651,7 @@ if __name__ == "__main__":
         session_id = sys.argv[2]
         channel = sys.argv[3] if len(sys.argv) > 3 else "discord"
         # Find file
-        for agent in ["main", "growth", "invest"]:
+        for agent in _discover_agent_dirs(SESSION_BASE):
             fpath = f"{SESSION_BASE}/{agent}/sessions/{session_id}.jsonl"
             if os.path.exists(fpath):
                 result = ingest_session(session_id, fpath, channel)

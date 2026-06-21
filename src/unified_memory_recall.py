@@ -73,11 +73,26 @@ def _get_vs() -> Optional["VectorStore"]:
 
 WORKSPACE = os.getenv("ARS_WORKSPACE", os.path.expanduser("~/.openclaw/workspace"))
 SQLITE_DB = os.getenv("ARS_MEMORY_DB", os.path.expanduser("~/.openclaw/memory/main.sqlite"))
-_OPENCLAW_BASE = os.getenv("OPENCLAW_HOME", os.path.expanduser("~/.openclaw"))
-SESSION_DIRS = [
-    os.path.join(_OPENCLAW_BASE, "agents", agent, "sessions")
-    for agent in ["main", "growth", "invest"]
-]
+_AGENTS_BASE = os.getenv("ARS_SESSION_BASE", os.path.expanduser("~/.openclaw/agents"))
+
+
+def _discover_session_dirs(base: str) -> list[str]:
+    """Auto-discover ``<base>/<agent>/sessions`` directories.
+
+    Replaces a previously hard-coded operator-specific agent roster so the
+    recall layer works for any host without configuration.
+    """
+    if not os.path.isdir(base):
+        return []
+    out = []
+    for name in sorted(os.listdir(base)):
+        candidate = os.path.join(base, name, "sessions")
+        if os.path.isdir(candidate):
+            out.append(candidate)
+    return out
+
+
+SESSION_DIRS = _discover_session_dirs(_AGENTS_BASE)
 NEO4J_URI = os.getenv("ARS_NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USER = os.getenv("ARS_NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = os.getenv("ARS_NEO4J_PASSWORD", "password")
@@ -149,10 +164,6 @@ def source_adjustment(location: str, title: str) -> float:
     score = 0.0
     if '.checkpoint.' in location:
         score += 0.25
-    if location.startswith('episode:26e731ba-64b2-4f40-b34f-f58ab8a03987'):
-        score -= 1.2
-    if title.startswith('前天我让你做了一个系统大升级'):
-        score -= 0.8
     if 'Conversation info (untrusted metadata)' in title:
         score -= 0.2
     return score
@@ -598,10 +609,9 @@ def canonical_key(hit: Hit) -> str:
 
 
 def recall_vector(query: str, top_k: int) -> list[Hit]:
-    """Vector similarity search via Gemini embedding-2.
-    
-    Active only when GEMINI_API_KEY is set.
-    Uses Google DoH to bypass DNS hijack (Surge/ClashX).
+    """Vector similarity search via Gemini embedding.
+
+    Active only when GEMINI_API_KEY is set. See ``vector_store`` for details.
     """
     vs = _get_vs()
     if vs is None:

@@ -24,10 +24,10 @@ KNOWN_ENTITIES = {
     # --- 用户个性化实体，请根据实际情况修改 ---
     # "你的名字": "person",
     # "AI助手名字": "agent",
-    "Neo4j": "technology", "OpenClaw": "technology", "Claude Code": "tool",
+    "Neo4j": "technology", "Claude Code": "tool",
     "Codex": "tool", "Telegram": "channel", "Discord": "channel", "Feishu": "channel",
-    "BotLearn": "product", "Ollama": "technology",
-    "MEMORY.md": "file", "SOUL.md": "file", "AGENTS.md": "file",
+    "Ollama": "technology",
+    "MEMORY.md": "file", "AGENTS.md": "file",
 }
 
 # Topic keywords (shared with episode_ingest)

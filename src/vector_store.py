@@ -4,9 +4,13 @@ vector_store.py — Gemini Embedding 向量检索层
 
 功能：
 - 使用 Google gemini-embedding-2 生成文本向量（3072 维）
-- 通过 Google DoH 绕过 DNS 劫持（Surge/ClashX 透明代理）
 - 存储向量到 SQLite BLOB（独立 ars_vectors 表，不依赖 vec0 扩展）
-- 余弦相似度检索
+- 余弦相似度检索（朴素 O(n) 实现，适用于小到中等规模；大规模建议
+  外置 pgvector / faiss）
+
+可选 DoH（DNS over HTTPS）兜底：当本机 DNS 被透明代理劫持时,可设
+``AGENTMESH_RUNTIME_DOH_BYPASS=1`` 走 Google DoH 解析 generativelanguage
+*.googleapis.com 的真实 IP。默认关闭。
 
 用法：
     from vector_store import VectorStore
@@ -37,7 +41,15 @@ _HIJACK_DOMAINS = (
 
 
 def _resolve_real_ip(hostname: str) -> Optional[str]:
-    """通过 Google DoH 解析真实 IP，绕过透明代理 DNS 劫持。"""
+    """Optional DoH fallback. Disabled unless ``AGENTMESH_RUNTIME_DOH_BYPASS=1``.
+
+    When enabled, resolves real IPs for known Google API hostnames via
+    ``https://dns.google/resolve`` to bypass transparent-proxy DNS hijack.
+    Filters out CGNAT-style fake responses in the 198.18.0.0/15 range.
+    """
+    if os.getenv("AGENTMESH_RUNTIME_DOH_BYPASS", "0") not in ("1", "true", "True"):
+        return None
+
     if hostname in _DNS_CACHE:
         return _DNS_CACHE[hostname]
 
@@ -53,7 +65,7 @@ def _resolve_real_ip(hostname: str) -> Optional[str]:
         data = json.loads(r.stdout)
         for answer in data.get("Answer", []):
             ip = answer["data"]
-            # 排除 198.18.x.x 虚假 IP
+            # Drop CGNAT / fake-IP ranges that proxies sometimes return.
             if not ip.startswith("198.18."):
                 _DNS_CACHE[hostname] = ip
                 return ip

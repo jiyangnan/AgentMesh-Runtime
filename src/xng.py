@@ -191,7 +191,7 @@ def build_parser() -> argparse.ArgumentParser:
         "ingest-session",
         help="ingest a visible session by id",
         description="Ingest a session by session id using the configured session base directory.",
-        epilog="Example:\n  xng memory ingest-session 26e731ba-64b2-4f40-b34f-f58ab8a03987 discord",
+        epilog="Example:\n  xng memory ingest-session 00000000-0000-0000-0000-000000000000 discord",
         formatter_class=RichHelpFormatter,
     )
     mis.add_argument("session_id", help="session id to ingest")

@@ -6,9 +6,9 @@ Fallback when OpenAI embedding is unavailable.
 Uses keyword + CONTAINS search on Episode.full_text and Episode.summary.
 
 Usage:
-    python3 neo4j-recall.py "第一性原理"
-    python3 neo4j-recall.py "neo4j 图数据库" --top-k 5
-    python3 neo4j-recall.py "白羊武士 项目" --json
+    python3 neo4j-recall.py "first principles"
+    python3 neo4j-recall.py "neo4j graph database" --top-k 5
+    python3 neo4j-recall.py "agent runtime memory" --json
 """
 
 import sys, json, re

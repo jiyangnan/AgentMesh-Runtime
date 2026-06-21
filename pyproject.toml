@@ -8,9 +8,9 @@ version = "0.1.0"
 description = "xiaonangua CLI: first-principles runtime, HA episodic memory, and autonomous loop"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "Apache-2.0"
 authors = [
-  { name = "jiyangnan" }
+  { name = "AgentMesh Runtime contributors" }
 ]
 dependencies = [
   "neo4j>=5.20.0"
