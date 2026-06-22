@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AgentMesh Runtime — 给你的 AI agent 加上记忆、循环、和恢复 · 开源本地工具</title>
-<meta name="description" content="AgentMesh Runtime 是 AgentMesh360 生态下的开源本地工具：给你的 AI agent（Claude Code / OpenClaw / Codex / Hermes）加上跨会话的持久记忆、有界 OODA 循环脚手架、和崩溃后干净拾起的能力。完全本地运行、不需账户、Apache 2.0 开源。" />
-<meta property="og:title" content="AgentMesh Runtime — 给你的 AI agent 加上记忆、循环、和恢复" />
-<meta property="og:description" content="开源本地脚手架：持久情景记忆、有界 OODA 循环、崩溃恢复，全程在你自己的机器上跑。智能由你的 agent 提供，脚手架由我们提供。" />
+<title>AgentMesh Runtime — 给你的 AI agent 加上记忆和恢复 · 开源本地脚手架</title>
+<meta name="description" content="AgentMesh Runtime 是 AgentMesh360 生态下的开源本地脚手架：给你的 AI agent（Claude Code / OpenClaw / Codex / Hermes）加上跨会话的持久记忆、有界 OODA 循环记录、崩溃后干净拾起的能力。完全本地运行、不需账户、Apache 2.0 开源。" />
+<meta property="og:title" content="AgentMesh Runtime — 给你的 AI agent 加上记忆和恢复" />
+<meta property="og:description" content="开源本地脚手架：跨会话的持久记忆、有界 OODA 循环、崩溃恢复，全程在你自己的机器上跑。智能由你的 agent 提供，脚手架由我们提供。" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://runtime.agentmesh360.com/" />
 <meta property="og:site_name" content="AgentMesh Runtime · AgentMesh360" />
 <meta name="robots" content="index,follow,max-image-preview:large" />
-<meta name="theme-color" content="#5B5BD6" />
+<meta name="theme-color" content="#0E8A6E" />
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:title" content="AgentMesh Runtime — 开源本地 agent 运行时脚手架" />
-<meta name="twitter:description" content="给你的 AI agent 加上持久记忆、OODA 循环记录、崩溃恢复。本地、开源、Apache 2.0。" />
+<meta name="twitter:description" content="AgentMesh Runtime 给你的 AI agent 加上持久记忆、OODA 循环记录、崩溃恢复，本地运行、Apache 2.0。" />
 <link rel="canonical" href="https://runtime.agentmesh360.com/" />
 <link rel="alternate" type="text/markdown" href="/llms.txt" title="AgentMesh Runtime LLMs.txt" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>" />
@@ -41,14 +41,13 @@
       "operatingSystem": "macOS, Windows, Linux",
       "isAccessibleForFree": true,
       "provider": { "@id": "https://agentmesh360.com/#organization" },
-      "description": "AgentMesh Runtime 是 AgentMesh360 生态下的开源本地 agent 运行时脚手架：持久情景记忆、有界 OODA 循环记录、崩溃恢复，全部本地运行。",
+      "description": "AgentMesh Runtime 是 AgentMesh360 生态下的开源本地 agent 运行时脚手架：跨会话的持久情景记忆、有界 OODA 循环记录、崩溃恢复，全部在本机跑。",
       "featureList": [
-        "多后端情景记忆（Neo4j + SQLite FTS5 + 文件 grep + 可选 Gemini 向量）",
-        "有界 OODA 循环状态机（Observe / Orient / Decide / Act / Verify / Record）",
-        "崩溃 / 重启后的 rehydrate 恢复",
-        "delayed sync ledger 跨 SQLite ↔ Neo4j",
-        "doctor 自检命令",
-        "本地运行，无云、无账户、无 API key",
+        "跨会话持久情景记忆",
+        "多后端 failover（Neo4j 图 + SQLite FTS5 + 文件 grep + 可选 Gemini 向量）",
+        "有界 OODA 循环状态机记录",
+        "崩溃 / 重启 rehydrate 恢复",
+        "doctor 一键环境自检",
         "Apache 2.0 开源"
       ],
       "offers": {
@@ -70,7 +69,7 @@
         {
           "@type": "Question",
           "name": "AgentMesh Runtime 会上云吗？需要账户或 API key 吗？",
-          "acceptedAnswer": { "@type": "Answer", "text": "不会，也不需要。所有数据都在用户自己的机器上，没有 AgentMesh360 账户、云服务或 key 要求。可选的 Gemini 向量召回需要用户自己的 GEMINI_API_KEY。" }
+          "acceptedAnswer": { "@type": "Answer", "text": "不会，也不需要。所有数据都在你自己的机器上，没有 AgentMesh360 账户、云服务或 key 要求。可选的 Gemini 向量召回需要你自己的 GEMINI_API_KEY。" }
         },
         {
           "@type": "Question",
@@ -94,241 +93,355 @@
 
 <style>
   :root {
-    --bg:#F7F7FB; --surface:#FFFFFF; --ink:#15172B; --ink-soft:#2D3043;
-    --muted:#6F7290; --rule:#E0E1EE; --accent:#5B5BD6; --accent-ink:#3B3BAA;
-    --warn:#D9534F; --good:#2E9E76;
-    --code-bg:#1B1D38; --code-fg:#EEEEFB; --code-dim:#9AA0CB; --code-acc:#FFD66E;
+    --bg:#FFF7F0; --surface:#FFFCF8; --ink:#1A1915; --ink-soft:#33423D;
+    --muted:#786F66; --rule:#E8DCCD; --accent:#0E8A6E; --accent-ink:#075B49;
+    --blue:#2E5BFF; --red:#FF2442; --yellow:#FFD400;
+    --code-bg:#0B2D27; --code-fg:#F5EFE5; --code-dim:#A7B7AE; --code-acc:#FFD400;
     --serif:"Source Serif 4","Noto Serif SC","Songti SC","STSong",Georgia,serif;
     --sans:"Inter",-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
     --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    --maxw:1080px; --gutter:clamp(20px,4vw,52px);
+    --maxw:1120px; --gutter:clamp(20px,4vw,56px);
   }
   *{box-sizing:border-box} html,body{margin:0;padding:0} html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;
-    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:"ss01","cv11"}
   ::selection{background:var(--accent);color:#fff}
   a{color:inherit;text-decoration:none}
   a.link{color:var(--ink);border-bottom:1px solid currentColor;padding-bottom:1px;transition:color .15s,border-color .15s}
   a.link:hover{color:var(--accent);border-bottom-color:var(--accent)}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gutter)}
 
-  .nav{position:sticky;top:0;z-index:50;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid transparent;transition:border-color .2s}
+  .nav{position:sticky;top:0;z-index:50;background:color-mix(in oklab,var(--bg) 85%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid transparent;transition:border-color .2s}
   .nav.scrolled{border-bottom-color:var(--rule)}
   .nav-inner{max-width:var(--maxw);margin:0 auto;padding:18px var(--gutter);display:flex;align-items:center;justify-content:space-between;gap:24px}
   .brand{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:500;font-size:18px;letter-spacing:-0.005em}
-  .brand-mark{width:22px;height:22px;display:inline-block;color:var(--accent);font-size:20px;line-height:1}
-  .brand small{font-family:var(--sans);font-weight:450;color:var(--muted);font-size:13px}
-  .nav-links{display:flex;align-items:center;gap:28px;font-size:14px;color:var(--ink-soft)}
-  .nav-links a:hover{color:var(--accent)}
-  .nav-cta{font-size:14px;background:var(--ink);color:#fff;padding:9px 16px;border-radius:999px;transition:background .15s}
-  .nav-cta:hover{background:var(--accent)}
+  .brand-mark{width:22px;height:22px;display:inline-block;flex:none;color:var(--accent)}
+  .brand small{font-family:var(--sans);font-weight:450;color:var(--muted);font-size:13px;letter-spacing:0}
+  .nav-links{display:flex;align-items:center;gap:32px;font-size:14px;color:var(--ink-soft)}
+  .nav-links a{transition:color .15s} .nav-links a:hover{color:var(--accent)}
+  .nav-cta{font-size:14px;background:var(--ink);color:var(--surface);padding:9px 16px;border-radius:999px;transition:background .15s,color .15s}
+  .nav-links .nav-cta:hover{background:var(--accent);color:var(--surface)}
   @media(max-width:720px){.nav-links a:not(.nav-cta){display:none}}
 
-  .hero{padding:72px 0 56px}
-  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:18px}
-  .display{font-family:var(--serif);font-weight:500;font-size:clamp(36px,5.4vw,64px);line-height:1.1;letter-spacing:-0.022em;margin:0 0 24px}
-  .display em{font-style:italic;color:var(--accent)}
-  .lead{font-size:clamp(17px,1.6vw,19px);max-width:720px;color:var(--ink-soft);margin:0 0 32px}
-  .hero-ctas{display:flex;flex-wrap:wrap;gap:14px}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;font-size:15px;font-weight:500;border:1px solid transparent;transition:background .15s,border-color .15s,color .15s}
-  .btn-primary{background:var(--ink);color:#fff}
-  .btn-primary:hover{background:var(--accent)}
-  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
-  .btn-ghost:hover{border-color:var(--ink)}
+  .hero{padding:clamp(64px,11vw,140px) 0 clamp(48px,8vw,96px)}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in oklab,var(--accent) 20%,transparent)}
+  h1.display{font-family:var(--serif);font-weight:500;font-size:clamp(38px,5.2vw,70px);line-height:1.06;letter-spacing:-0.02em;margin:28px 0 0}
+  h1.display em{font-style:italic;color:var(--accent-ink);font-weight:500}
+  .lede{margin:28px 0 0;font-size:clamp(17px,1.5vw,19px);line-height:1.55;color:var(--ink-soft);max-width:62ch;text-wrap:pretty}
+  .hero-ctas{margin-top:36px;display:flex;flex-wrap:wrap;gap:12px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;font-size:14.5px;font-weight:500;border-radius:999px;transition:background .15s,color .15s,border-color .15s,transform .15s;border:1px solid transparent;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--ink);color:var(--surface)} .btn-primary:hover{background:var(--accent);color:var(--surface)}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--rule)} .btn-ghost:hover{border-color:var(--ink)}
+  .btn .arrow{transition:transform .15s} .btn:hover .arrow{transform:translateX(3px)}
 
-  .block{padding:56px 0;border-top:1px solid var(--rule)}
-  .section-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-  .section-title{font-family:var(--serif);font-weight:500;font-size:clamp(28px,3.4vw,40px);line-height:1.2;letter-spacing:-0.012em;margin:0 0 28px;max-width:780px}
-  .section-title em{font-style:italic;color:var(--accent)}
-  .section-lead{font-size:17px;color:var(--ink-soft);max-width:680px;margin:0 0 28px}
+  .terminal-frame{margin-top:64px;background:var(--code-bg);color:var(--code-fg);border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,0.04) inset,0 30px 60px -30px rgba(31,29,24,0.4),0 12px 24px -16px rgba(31,29,24,0.25)}
+  .terminal-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+  .terminal-bar .lights{display:flex;gap:6px}
+  .terminal-bar .lights span{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,0.1)}
+  .terminal-bar .title{font-family:var(--mono);font-size:12px;color:var(--code-dim);margin-left:8px}
+  pre.code{margin:0;padding:22px 24px 26px;font-family:var(--mono);font-size:13.5px;line-height:1.85;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  pre.code .c-prompt{color:var(--code-acc);user-select:none} pre.code .c-cmd{color:var(--code-fg)}
+  pre.code .c-flag{color:var(--blue)} pre.code .c-str{color:var(--yellow)} pre.code .c-dim{color:var(--code-dim)}
 
-  .grid{display:grid;gap:24px}
-  .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-  @media(max-width:720px){.grid.cols-2,.grid.cols-3{grid-template-columns:1fr}}
+  section.block{padding:clamp(72px,10vw,128px) 0;border-top:1px solid var(--rule)}
+  .kicker{font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:28px;display:flex;align-items:center;gap:12px}
+  .kicker::before{content:"";width:24px;height:1px;background:var(--muted);display:inline-block}
+  h2.section-title{font-family:var(--serif);font-weight:500;font-size:clamp(32px,4.2vw,52px);line-height:1.08;letter-spacing:-0.018em;margin:0;max-width:22ch;text-wrap:balance}
+  h2.section-title em{font-style:italic;color:var(--accent-ink);font-weight:500}
+  .section-lede{margin-top:22px;font-size:18px;line-height:1.55;color:var(--ink-soft);max-width:58ch}
 
-  .card{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:24px}
-  .card h3{font-family:var(--serif);font-weight:500;font-size:20px;letter-spacing:-0.005em;margin:0 0 8px}
-  .card p{margin:0;color:var(--ink-soft);font-size:15px}
-  .card .tag{font-family:var(--mono);font-size:11px;letter-spacing:0.04em;color:var(--accent-ink);background:color-mix(in oklab,var(--accent) 15%,transparent);padding:3px 8px;border-radius:6px;display:inline-block;margin-bottom:10px}
-  .card.warn .tag{color:var(--warn);background:color-mix(in oklab,var(--warn) 15%,transparent)}
-  .card.good .tag{color:var(--good);background:color-mix(in oklab,var(--good) 15%,transparent)}
+  .why{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,5vw,80px);align-items:start}
+  .why h2{max-width:14ch}
+  .why-body p{font-size:clamp(20px,2vw,24px);line-height:1.45;color:var(--ink);margin:0;font-family:var(--serif);font-weight:400;letter-spacing:-0.005em;text-wrap:pretty}
+  .why-body p + p{margin-top:18px} .why-body p .hi{color:var(--accent-ink);font-style:italic}
+  @media(max-width:820px){.why{grid-template-columns:1fr;gap:24px}}
 
-  pre.code{background:var(--code-bg);color:var(--code-fg);padding:22px 24px;border-radius:12px;font-family:var(--mono);font-size:13.5px;line-height:1.65;overflow-x:auto;margin:0}
-  pre.code .c{color:var(--code-dim)} pre.code .k{color:var(--code-acc)}
+  .features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(28px,3.5vw,56px);margin-top:clamp(48px,6vw,80px)}
+  .feat-num{font-family:var(--serif);font-style:italic;font-weight:400;font-size:16px;color:var(--accent);margin-bottom:22px;display:inline-block}
+  .feat h3{font-family:var(--serif);font-weight:500;font-size:22px;line-height:1.22;letter-spacing:-0.008em;margin:0 0 14px;text-wrap:balance}
+  .feat p{margin:0;font-size:15.5px;line-height:1.6;color:var(--ink-soft);text-wrap:pretty}
+  @media(max-width:820px){.features{grid-template-columns:1fr}}
 
-  .faq dt{font-family:var(--serif);font-weight:500;font-size:18px;margin:24px 0 8px;letter-spacing:-0.005em}
-  .faq dt:first-child{margin-top:0}
-  .faq dd{margin:0 0 16px;color:var(--ink-soft);max-width:760px}
+  /* agents we plug into */
+  .agents{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(16px,2.5vw,24px);margin-top:clamp(48px,6vw,72px)}
+  @media(max-width:820px){.agents{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:480px){.agents{grid-template-columns:1fr}}
+  .ag{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:clamp(22px,2.6vw,28px);display:flex;flex-direction:column;gap:8px}
+  .ag .ag-tag{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.06em}
+  .ag h3{font-family:var(--serif);font-weight:500;font-size:18px;margin:0;letter-spacing:-0.005em}
+  .ag p{margin:0;font-size:14px;color:var(--ink-soft);line-height:1.55}
 
-  footer{padding:48px 0 56px;border-top:1px solid var(--rule);color:var(--muted);font-size:14px}
-  footer .row{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center}
-  footer a:hover{color:var(--accent)}
+  /* local stack triplet */
+  .stack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,3vw,32px);margin-top:clamp(48px,6vw,72px)}
+  @media(max-width:680px){.stack{grid-template-columns:1fr}}
+  .stk{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:clamp(22px,2.6vw,30px)}
+  .stk .stk-icon{font-family:var(--mono);font-size:12px;color:var(--accent-ink);letter-spacing:0.04em;margin-bottom:14px}
+  .stk h3{font-family:var(--serif);font-weight:500;font-size:19px;margin:0 0 10px;letter-spacing:-0.008em}
+  .stk p{margin:0;font-size:14.5px;color:var(--ink-soft);line-height:1.58}
+  .stk code{font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em}
+
+  .steps{margin-top:clamp(48px,6vw,72px);display:grid;grid-template-columns:1fr;gap:0}
+  .step{display:grid;grid-template-columns:56px 1fr;gap:clamp(20px,3vw,48px);padding:32px 0;border-top:1px solid var(--rule);align-items:start}
+  .step:last-child{border-bottom:1px solid var(--rule)}
+  .step-n{font-family:var(--serif);font-weight:400;font-size:26px;color:var(--muted);line-height:1;font-feature-settings:"lnum";padding-top:4px}
+  .step-body{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(20px,4vw,64px);align-items:start}
+  @media(max-width:720px){.step-body{grid-template-columns:1fr;gap:12px}}
+  .step h3{font-family:var(--serif);font-weight:500;font-size:clamp(22px,2.4vw,28px);line-height:1.18;letter-spacing:-0.012em;margin:0;text-wrap:balance}
+  .step p{margin:0;color:var(--ink-soft);font-size:16px;line-height:1.6;text-wrap:pretty}
+  .step p code{font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em}
+
+  .faq-list{margin-top:clamp(40px,5vw,56px)}
+  .faq-item{border-top:1px solid var(--rule)}
+  .faq-list .faq-item:last-child{border-bottom:1px solid var(--rule)}
+  .faq-item summary{list-style:none;padding:26px 32px 26px 0;position:relative;font-family:var(--serif);font-weight:500;font-size:clamp(18px,1.7vw,21px);line-height:1.35;letter-spacing:-0.008em;color:var(--ink);transition:color .15s}
+  .faq-item summary::-webkit-details-marker{display:none}
+  .faq-item summary:hover{color:var(--accent)}
+  .faq-item summary::after{content:"";position:absolute;right:4px;top:50%;width:14px;height:14px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-65%) rotate(45deg);transition:transform .2s;opacity:.55}
+  .faq-item[open] summary::after{transform:translateY(-25%) rotate(-135deg)}
+  .faq-answer{padding:0 48px 28px 0;color:var(--ink-soft);font-size:16px;line-height:1.65;max-width:70ch;text-wrap:pretty}
+  .faq-answer code{font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.92em}
+
+  footer.foot{border-top:1px solid var(--rule);padding:56px 0 72px;font-size:14px;color:var(--muted)}
+  .foot-inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;align-items:flex-end}
+  .foot .brand{font-size:16px} .foot-meta{display:flex;flex-wrap:wrap;gap:24px} .foot-meta a:hover{color:var(--accent)}
 </style>
 </head>
 <body>
 
-<nav class="nav" id="nav">
+<header class="nav" id="topnav">
   <div class="nav-inner">
-    <a class="brand" href="/">
-      <span class="brand-mark">🧠</span>
-      AgentMesh Runtime <small>· by AgentMesh360</small>
+    <a href="#" class="brand" aria-label="AgentMesh Runtime">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M20 12a8 8 0 1 1-3.2-6.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M20 5v4h-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+      </svg>
+      AgentMesh Runtime <small>· AgentMesh360</small>
     </a>
-    <div class="nav-links">
-      <a href="#what">能力</a>
-      <a href="#not">不做</a>
-      <a href="#install">安装</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">能力</a>
+      <a href="#agents">支持的 agent</a>
+      <a href="#how">怎么用</a>
       <a href="#faq">FAQ</a>
-      <a class="nav-cta" href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub →</a>
-    </div>
+      <a href="https://agentmesh360.com">AgentMesh360</a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="nav-cta">看 GitHub</a>
+    </nav>
   </div>
-</nav>
+</header>
 
 <section class="hero">
   <div class="wrap">
-    <div class="eyebrow">Open source · Apache 2.0 · Local-first</div>
-    <h1 class="display">给你的 AI agent 加上 <em>记忆</em>、<em>循环</em>、和 <em>恢复</em>。</h1>
-    <p class="lead">AgentMesh Runtime 是一层 agent 用的本地运行时脚手架：跨会话的持久情景记忆、有界 OODA 循环记录、崩溃后干净拾起。<strong>智能仍然来自你的 agent</strong>（Claude Code / OpenClaw / Codex / Hermes / 自定义）——这一层只做底下的脏活。</p>
+    <div class="eyebrow"><span class="dot"></span> OPEN SOURCE · 完全本地运行</div>
+    <h1 class="display">给你的 AI agent 加上<em>记忆</em>和<em>恢复</em>。</h1>
+    <p class="lede">
+      AgentMesh Runtime 是一层<strong>完全本地、开源</strong>的 agent 运行时脚手架：跨会话的持久情景记忆、有界 OODA 循环记录、崩溃后干净拾起的能力。装好之后，<strong>智能仍然来自你的 agent</strong>（Claude Code / OpenClaw / Codex / Hermes / 自定义）——这层脚手架只在底下做记忆、记录、恢复这些脏活。不需账户、不上云、免费、Apache 2.0 开源。
+    </p>
     <div class="hero-ctas">
-      <a class="btn btn-primary" href="https://github.com/jiyangnan/AgentMesh-Runtime">在 GitHub 上看 →</a>
-      <a class="btn btn-ghost" href="#install">本机跑起来</a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="btn btn-primary">看 GitHub <span class="arrow">→</span></a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md" class="btn btn-ghost">看 AGENTS.md</a>
+    </div>
+
+    <div class="terminal-frame" aria-label="在本地装好，交给你的 agent">
+      <div class="terminal-bar">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <span class="title">~ run-this-locally</span>
+      </div>
+<pre class="code"><span class="c-prompt">$</span> <span class="c-cmd">git clone https://github.com/jiyangnan/AgentMesh-Runtime.git &amp;&amp; cd AgentMesh-Runtime</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv sync</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime doctor</span>           <span class="c-dim"># 自检：Neo4j / SQLite / ledger / checkpoint</span>
+
+<span class="c-dim"># 让你的 agent 调用（看 AGENTS.md）：</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime memory recall </span><span class="c-str">"your query"</span><span class="c-cmd"> --top-k 5</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime memory ingest-file ./session.jsonl discord</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime rehydrate --write-default --print-path</span>  <span class="c-dim"># 重启后捡起</span></pre>
     </div>
   </div>
 </section>
 
-<section class="block" id="what">
+<section class="block">
+  <div class="wrap why">
+    <div>
+      <div class="kicker">为什么需要这一层</div>
+      <h2 class="section-title">Agent 很聪明，可惜<em>记不住</em>，断了就<em>断了</em>。</h2>
+    </div>
+    <div class="why-body">
+      <p>会话一结束、进程一重启、上下文一爆，<span class="hi">昨天讨论过的决策、踩过的坑、失败过的尝试，全部归零</span>。</p>
+      <p>AgentMesh Runtime 把记忆、循环记录、断点恢复这层底层脏活做掉，让你的 agent 跨天跨次依然延续——而具体怎么想、怎么决定，仍然在它自己的脑子里。</p>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="features">
   <div class="wrap">
-    <div class="section-eyebrow">What it gives you</div>
-    <h2 class="section-title">5 件 <em>诚实</em> 的事。</h2>
-    <p class="section-lead">不是 8 件，不是 12 件。下面这些就是代码里真的实现了、能跑的。其余的请看下一段「不做什么」。</p>
-    <div class="grid cols-3">
-      <div class="card good">
-        <span class="tag">memory</span>
-        <h3>持久情景记忆</h3>
-        <p>Neo4j 图 → SQLite FTS5（BM25）→ 文件 grep → 可选 Gemini 向量。任一后端挂掉，其余继续服务。</p>
+    <div class="kicker">脚手架能力 · 全在本地跑</div>
+    <h2 class="section-title">5 件 <em>诚实</em> 的事，全部跑在本机。</h2>
+    <p class="section-lede">不夸大，不画饼。下面列的是代码里真的实现了、能跑的能力。决策智能继续来自你的 agent，这层只做底下的事。</p>
+    <div class="features">
+      <div class="feat">
+        <span class="feat-num">i.</span>
+        <h3>多后端持久情景记忆</h3>
+        <p>Neo4j 图召回、SQLite FTS5（BM25 + snippet）、原始文件 grep、可选 Gemini 向量——四层 failover，任一后端挂了其余继续服务。会话事件、决策、教训都能跨次召回。</p>
       </div>
-      <div class="card good">
-        <span class="tag">loop</span>
-        <h3>OODA 循环脚手架</h3>
-        <p>Observe / Orient / Decide / Act / Verify / Record 状态机。每一步落到持久轨迹。<strong>决策由你的 agent 给</strong>。</p>
+      <div class="feat">
+        <span class="feat-num">ii.</span>
+        <h3>有界 OODA 循环记录</h3>
+        <p>Observe / Orient / Decide / Act / Verify / Record 状态机，把每一步落到持久轨迹。<strong>真正的决策由 agent 给</strong>——脚手架只确保步骤被执行、过程被记录、不偏离纪律。</p>
       </div>
-      <div class="card good">
-        <span class="tag">recovery</span>
+      <div class="feat">
+        <span class="feat-num">iii.</span>
         <h3>崩溃 / 重启恢复</h3>
-        <p>SQLite ↔ Neo4j 延迟同步账本、checkpoint 存储、<code>rehydrate</code> 一键重建"我刚才到哪了"。</p>
+        <p>SQLite ↔ Neo4j 延迟同步账本、checkpoint 存储、<code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">rehydrate</code> 一键命令——重启后立刻重建"我刚才到哪了"，注入新会话开干。</p>
       </div>
-      <div class="card good">
-        <span class="tag">health</span>
-        <h3>一键自检</h3>
-        <p><code>doctor</code> 输出 JSON：Neo4j 连通、SQLite 健康、账本漂移、checkpoint 状态。</p>
-      </div>
-      <div class="card good">
-        <span class="tag">anti-pattern</span>
-        <h3>规则式反模式检测</h3>
-        <p><code>blind_retry</code> / <code>phantom_progress</code> / <code>pivot_exhaustion</code>，是计数器和阈值，不是魔法。</p>
-      </div>
-      <div class="card">
-        <span class="tag">+</span>
-        <h3>给 agent 而非给人</h3>
-        <p>整个仓库设计为 agent 调用。看 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md">AGENTS.md</a>，里面写了什么时候 ingest、什么时候 rehydrate、什么话<strong>不能</strong>对人类许诺。</p>
+      <div class="feat">
+        <span class="feat-num">iv.</span>
+        <h3>一键自检 + 反模式检测</h3>
+        <p><code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">doctor</code> 给出 JSON 健康报告；规则式 <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">blind_retry</code> / <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">phantom_progress</code> / <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">pivot_exhaustion</code> 反模式提醒——是计数器加阈值，不是魔法。</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="block" id="not">
+<section class="block" id="agents">
   <div class="wrap">
-    <div class="section-eyebrow">What it is NOT</div>
-    <h2 class="section-title">4 件 <em>明确</em> 不做的事。</h2>
-    <p class="section-lead">这层的边界讲清楚，才不会让你和你的 agent 误以为它能干别的事。</p>
-    <div class="grid cols-2">
-      <div class="card warn">
-        <span class="tag">not an LLM</span>
-        <h3>不带 AI 模型</h3>
-        <p>它给你已经在用的 agent 做脚手架。没有内置 LLM，也不打算有。</p>
+    <div class="kicker">谁能驱动</div>
+    <h2 class="section-title">脚手架不挑 agent。</h2>
+    <p class="section-lede">不绑死任何一家。任何能调用本地 CLI 或 Python 包的 agent / 自定义脚本，都能驱动这层脚手架。</p>
+    <div class="agents">
+      <div class="ag"><span class="ag-tag">CLI / SKILL</span><h3>Claude Code</h3><p>把 <code>agentmesh-runtime</code> 当工具命令调；可写 skill 自动加载。</p></div>
+      <div class="ag"><span class="ag-tag">原生宿主</span><h3>OpenClaw</h3><p>本产品的发源地，路径默认就指向 OpenClaw 的运行时目录。</p></div>
+      <div class="ag"><span class="ag-tag">CLI / MCP</span><h3>Codex</h3><p>通过 shell 调用 CLI 或包装成 MCP 工具；与 Codex CLI 完全兼容。</p></div>
+      <div class="ag"><span class="ag-tag">本地 agent</span><h3>Hermes / 自定义</h3><p>任何能跑 Python 子进程的脚本都能驱动；env 改路径就接好。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="stack">
+  <div class="wrap">
+    <div class="kicker">本地依赖</div>
+    <h2 class="section-title">三件套，全在<em>你自己的机器</em>上。</h2>
+    <p class="section-lede">没有云端 worker、没有托管数据库、没有付费 API。装好这三样，脚手架就能在本机跑。<code>uv sync</code> 会处理 Python 这边；其余手动装。</p>
+    <div class="stack">
+      <div class="stk">
+        <div class="stk-icon">RUNTIME</div>
+        <h3>Python 3.10+ · uv</h3>
+        <p>包管理用 <code>uv</code>，对齐 AgentMesh 生态。<code>uv sync</code> 一行装好所有依赖。</p>
       </div>
-      <div class="card warn">
-        <span class="tag">not a SaaS</span>
-        <h3>不在云上跑</h3>
-        <p>没有云服务、没有账户、没有 API key。完全本地。Gemini 向量召回是可选的，且 key 由你提供。</p>
+      <div class="stk">
+        <div class="stk-icon">GRAPH</div>
+        <h3>Neo4j（社区版可选）</h3>
+        <p>图后端走 docker：<code>docker compose -f docker/docker-compose.neo4j.yml up</code>。挂了不影响——SQLite + 文件 grep 会接住。</p>
       </div>
-      <div class="card warn">
-        <span class="tag">not a brain</span>
-        <h3>不替你做决策</h3>
-        <p>OODA 循环的 <code>decide()</code> 和 <code>verify()</code> 是有意做小的存根。真正的推理来自你的 agent。</p>
-      </div>
-      <div class="card warn">
-        <span class="tag">not at scale yet</span>
-        <h3>不是大规模系统</h3>
-        <p>向量层是 O(n) 暴力余弦。个人 / 小团队规模够用。百万级向量请外置 pgvector / faiss。</p>
+      <div class="stk">
+        <div class="stk-icon">VECTOR</div>
+        <h3>Gemini Embedding（可选）</h3>
+        <p>语义召回需要 <code>GEMINI_API_KEY</code>，你自己注册。不配也能跑——只是没向量这一路。</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="block" id="install">
+<section class="block" id="how">
   <div class="wrap">
-    <div class="section-eyebrow">Install &amp; use</div>
-    <h2 class="section-title">两条命令，<em>开跑</em>。</h2>
-    <pre class="code"><span class="c"># clone + install</span>
-git clone https://github.com/jiyangnan/AgentMesh-Runtime.git
-cd AgentMesh-Runtime
-uv sync
-
-<span class="c"># 自检</span>
-uv run <span class="k">agentmesh-runtime</span> doctor
-
-<span class="c"># 召回记忆 / 摄入会话</span>
-uv run <span class="k">agentmesh-runtime</span> memory recall <span class="k">"your query"</span> --top-k 5
-uv run <span class="k">agentmesh-runtime</span> memory ingest-file /path/to/session.jsonl discord
-
-<span class="c"># OODA demo · 崩溃恢复</span>
-uv run <span class="k">agentmesh-runtime</span> demo
-uv run <span class="k">agentmesh-runtime</span> rehydrate --write-default --print-path
-
-<span class="c"># 短别名：amr 可替换 agentmesh-runtime</span></pre>
-    <p class="section-lead" style="margin-top:24px">需要图后端？仓库里带一个 <code>docker/docker-compose.neo4j.yml</code>，<code>docker compose up</code> 就行。</p>
+    <div class="kicker">怎么用</div>
+    <h2 class="section-title">设计为 <em>agent-friendly</em>。</h2>
+    <p class="section-lede">整个仓库的设计是让 agent 调用，不是给你一行行手敲。你只负责装上 + 告诉 agent 怎么用，剩下的让它跑。</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">01</div>
+        <div class="step-body">
+          <h3>装上 CLI</h3>
+          <p><code>git clone</code> 仓库后 <code>uv sync</code>，得到 <code>agentmesh-runtime</code> / <code>amr</code> 命令；先跑一次 <code>doctor</code> 看环境是绿的。<br/><a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">看 GitHub →</a></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">02</div>
+        <div class="step-body">
+          <h3>把 AGENTS.md 整段交给你的 agent</h3>
+          <p>仓库根目录的 <code>AGENTS.md</code> 是写给 agent 看的——什么时候 <code>recall</code>、什么时候 <code>ingest</code>、什么时候 <code>rehydrate</code>，以及<strong>什么话不能对人类许诺</strong>。整段贴给你的 Claude Code / OpenClaw / Codex / Hermes 就行。<br/><a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md">看 AGENTS.md →</a></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">03</div>
+        <div class="step-body">
+          <h3>agent 在本机跑，跨次延续</h3>
+          <p>新任务前 agent 自己 <code>recall</code> 历史决策、任务后 <code>ingest</code> 沉淀经验、重启后 <code>rehydrate</code> 捡回状态。你这边只看输出，不必接触底层。</p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
 <section class="block" id="faq">
   <div class="wrap">
-    <div class="section-eyebrow">FAQ</div>
-    <h2 class="section-title">问到底。</h2>
-    <dl class="faq">
-      <dt>它自己带 LLM 吗？</dt>
-      <dd>不带。这是脚手架，智能由你已经在用的 agent（Claude Code / OpenClaw / Codex / Hermes / 自定义）提供。脚手架做的是记忆、循环记录、崩溃恢复这些底层事情。</dd>
-
-      <dt>它会上云吗？需要账户或 API key 吗？</dt>
-      <dd>不会，也不需要。所有数据都在你自己的机器上，没有 AgentMesh360 账户、云服务或 key 要求。可选的 Gemini 向量召回需要你自己的 <code>GEMINI_API_KEY</code>。</dd>
-
-      <dt>OODA 循环会替我决策吗？</dt>
-      <dd>不会。<code>decide</code> 和 <code>verify</code> 步骤是有意做小的状态机存根——它们记录你做了什么，但不替你想下一步。真正的推理由你的 agent 出。</dd>
-
-      <dt>我用的不是 OpenClaw，也能用吗？</dt>
-      <dd>可以。默认路径还指向 <code>~/.openclaw/*</code> 是历史原因，把 <code>ARS_SESSION_BASE</code> 和 <code>ARS_MEMORY_DB</code> 改成你自己 agent 的路径即可。Claude Code / Codex / Hermes / 任何自定义 agent 都能驱动。</dd>
-
-      <dt>未来会做托管服务吗？</dt>
-      <dd>暂时不做。如果有真实用户问"能帮我托管 Neo4j 吗"，会做一个**只托管数据库**的极薄 server——不是智能层。决策见 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/README.md">docs/decisions/</a>。</dd>
-    </dl>
+    <div class="kicker">常见问题</div>
+    <h2 class="section-title">FAQ.</h2>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>它自己带 LLM 吗？</summary>
+        <div class="faq-answer">不带。这是脚手架，智能由你已经在用的 agent（Claude Code / OpenClaw / Codex / Hermes / 自定义）提供。脚手架做的是记忆、循环记录、崩溃恢复这些底层事情。</div>
+      </details>
+      <details class="faq-item">
+        <summary>它会上云吗？需要账户或 API key 吗？</summary>
+        <div class="faq-answer">不会，也不需要。所有数据都在你自己的机器上，没有 AgentMesh360 账户、云服务或 key 要求。可选的 Gemini 向量召回需要你自己的 <code>GEMINI_API_KEY</code>。</div>
+      </details>
+      <details class="faq-item">
+        <summary>OODA 循环会替我决策吗？</summary>
+        <div class="faq-answer"><code>decide</code> 和 <code>verify</code> 步骤是有意做小的状态机存根——它们记录你做了什么，但不替你想下一步。真正的推理由你的 agent 出，这层只确保步骤被走完、记录被写下、不偏离纪律。</div>
+      </details>
+      <details class="faq-item">
+        <summary>我用的不是 OpenClaw，也能用吗？</summary>
+        <div class="faq-answer">可以。默认路径还指向 <code>~/.openclaw/*</code> 是历史原因，把 <code>ARS_SESSION_BASE</code> 和 <code>ARS_MEMORY_DB</code> 改成你自己 agent 的路径即可。Claude Code / Codex / Hermes / 任何自定义 agent 都能驱动。</div>
+      </details>
+      <details class="faq-item">
+        <summary>"SQLite FTS" 真是 FTS5 吗？还是包了个 LIKE？</summary>
+        <div class="faq-answer">真 FTS5，带 BM25 排序和 snippet 高亮。这里写实诚——文档里有过一次错误指控说"实为 LIKE"，后来对照代码确认 <code>chunks_fts MATCH ?</code> 是正经的 FTS5 表查询，已经撤回（见 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/2026-06-18-claude-技术尽调与综合结论.md">决策文档的 errata</a>）。</div>
+      </details>
+      <details class="faq-item">
+        <summary>向量层是 O(n) 暴力余弦吗？</summary>
+        <div class="faq-answer">是。个人 / 小团队规模够用，百万级以上向量请外置 pgvector 或 faiss。我们没有装作它是分布式向量库——卖点要诚实。</div>
+      </details>
+      <details class="faq-item">
+        <summary>未来会做托管 server 吗？</summary>
+        <div class="faq-answer">暂时不做。如果将来有真实用户问"能帮我托管 Neo4j 吗"，会做一个<strong>只代管数据库</strong>的极薄 server——<strong>不是智能层</strong>。决策见 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/README.md">docs/decisions/</a>。</div>
+      </details>
+      <details class="faq-item">
+        <summary>真的开源吗？</summary>
+        <div class="faq-answer">是。Apache 2.0，代码全在 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a>，欢迎自取、改造、提 issue。</div>
+      </details>
+    </div>
   </div>
 </section>
 
-<footer>
-  <div class="wrap row">
-    <span>© 2026 AgentMesh Runtime · Apache 2.0</span>
-    <span>
-      <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a> ·
-      <a class="link" href="https://agentmesh360.com/">AgentMesh360</a> ·
-      <a class="link" href="/llms.txt">llms.txt</a>
-    </span>
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <div>
+      <a href="#" class="brand">
+        <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 12a8 8 0 1 1-3.2-6.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M20 5v4h-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+        </svg>
+        AgentMesh Runtime
+      </a>
+      <div style="margin-top:8px;font-size:13.5px;color:var(--muted);">AgentMesh 生态（<a class="link" href="https://agentmesh360.com" style="font-size:inherit">agentmesh360.com</a>）下的开源项目 · Apache 2.0</div>
+    </div>
+    <div class="foot-meta">
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md">AGENTS.md</a>
+      <a href="https://agentmesh360.com">AgentMesh360</a>
+      <span>© 2026</span>
+    </div>
   </div>
 </footer>
 
 <script>
-  const n=document.getElementById('nav');
-  const onScroll=()=>n.classList.toggle('scrolled',window.scrollY>4);
-  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  (function(){
+    const nav = document.getElementById('topnav');
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  })();
 </script>
 
 </body>
