@@ -1,0 +1,26 @@
+# AgentMesh Runtime
+
+AgentMesh Runtime is an open-source, local-first runtime-scaffolding library in the AgentMesh360 ecosystem.
+
+## Canonical URL
+
+https://runtime.agentmesh360.com/
+
+## Product Summary
+
+- Category: local-first runtime scaffolding for AI agents.
+- Audience: developers building or running AI agents (Claude Code, OpenClaw, Codex, Hermes, custom).
+- What it does:
+  - Persistent episodic memory across sessions, with multi-backend recall (Neo4j graph → SQLite FTS5 with BM25 → raw file grep → optional Gemini vector).
+  - A bounded OODA loop state machine (Observe / Orient / Decide / Act / Verify / Record) that records every step into a durable trace. The caller agent supplies real reasoning; this layer enforces discipline and the log.
+  - Crash and restart recovery via a deferred sync ledger across SQlite ↔ Neo4j, checkpoint store, and a `rehydrate` snapshot command.
+  - Self-check: one CLI command (`doctor`) returns a JSON health report of all backends and recovery state.
+- What it does not do: it does not bundle an LLM, it does not run in the cloud, it does not require an account or API key, and it does not contain a "smart" OODA Policy Engine — the decide/verify steps are intentionally minimal stubs that defer to the caller agent.
+- Local-first: everything runs on the user's own machine.
+- Account requirement: this open-source local version does not require an AgentMesh360 account or API key.
+- License: Apache 2.0.
+- Source code: https://github.com/jiyangnan/AgentMesh-Runtime
+
+## Best Short Description
+
+AgentMesh Runtime is an Apache 2.0 open-source local library that gives any AI agent persistent memory, an OODA-loop scaffold, and crash-recovery — without bringing its own LLM or cloud service.

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AgentMesh Runtime — 给你的 AI agent 加上记忆、循环、和恢复 · 开源本地工具</title>
+<meta name="description" content="AgentMesh Runtime 是 AgentMesh360 生态下的开源本地工具：给你的 AI agent（Claude Code / OpenClaw / Codex / Hermes）加上跨会话的持久记忆、有界 OODA 循环脚手架、和崩溃后干净拾起的能力。完全本地运行、不需账户、Apache 2.0 开源。" />
+<meta property="og:title" content="AgentMesh Runtime — 给你的 AI agent 加上记忆、循环、和恢复" />
+<meta property="og:description" content="开源本地脚手架：持久情景记忆、有界 OODA 循环、崩溃恢复，全程在你自己的机器上跑。智能由你的 agent 提供，脚手架由我们提供。" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://runtime.agentmesh360.com/" />
+<meta property="og:site_name" content="AgentMesh Runtime · AgentMesh360" />
+<meta name="robots" content="index,follow,max-image-preview:large" />
+<meta name="theme-color" content="#5B5BD6" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="AgentMesh Runtime — 开源本地 agent 运行时脚手架" />
+<meta name="twitter:description" content="给你的 AI agent 加上持久记忆、OODA 循环记录、崩溃恢复。本地、开源、Apache 2.0。" />
+<link rel="canonical" href="https://runtime.agentmesh360.com/" />
+<link rel="alternate" type="text/markdown" href="/llms.txt" title="AgentMesh Runtime LLMs.txt" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://agentmesh360.com/#organization",
+      "name": "AgentMesh360",
+      "url": "https://agentmesh360.com/"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://runtime.agentmesh360.com/#software",
+      "name": "AgentMesh Runtime",
+      "url": "https://runtime.agentmesh360.com/",
+      "codeRepository": "https://github.com/jiyangnan/AgentMesh-Runtime",
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "local AI agent runtime scaffolding",
+      "operatingSystem": "macOS, Windows, Linux",
+      "isAccessibleForFree": true,
+      "provider": { "@id": "https://agentmesh360.com/#organization" },
+      "description": "AgentMesh Runtime 是 AgentMesh360 生态下的开源本地 agent 运行时脚手架：持久情景记忆、有界 OODA 循环记录、崩溃恢复，全部本地运行。",
+      "featureList": [
+        "多后端情景记忆（Neo4j + SQLite FTS5 + 文件 grep + 可选 Gemini 向量）",
+        "有界 OODA 循环状态机（Observe / Orient / Decide / Act / Verify / Record）",
+        "崩溃 / 重启后的 rehydrate 恢复",
+        "delayed sync ledger 跨 SQLite ↔ Neo4j",
+        "doctor 自检命令",
+        "本地运行，无云、无账户、无 API key",
+        "Apache 2.0 开源"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "CNY",
+        "availability": "https://schema.org/InStock"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://runtime.agentmesh360.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "AgentMesh Runtime 自己带 LLM 吗？",
+          "acceptedAnswer": { "@type": "Answer", "text": "不带。这是脚手架，智能由你已经在用的 agent（Claude Code / OpenClaw / Codex / Hermes / 自定义）提供。脚手架做的是记忆、循环记录、崩溃恢复这些底层事情。" }
+        },
+        {
+          "@type": "Question",
+          "name": "AgentMesh Runtime 会上云吗？需要账户或 API key 吗？",
+          "acceptedAnswer": { "@type": "Answer", "text": "不会，也不需要。所有数据都在用户自己的机器上，没有 AgentMesh360 账户、云服务或 key 要求。可选的 Gemini 向量召回需要用户自己的 GEMINI_API_KEY。" }
+        },
+        {
+          "@type": "Question",
+          "name": "AgentMesh Runtime 的 OODA 循环会替我决策吗？",
+          "acceptedAnswer": { "@type": "Answer", "text": "不会。decide 和 verify 步骤是有意做小的状态机存根——它们记录你做了什么，但不替你想下一步。真正的推理由你的 agent 出。" }
+        },
+        {
+          "@type": "Question",
+          "name": "我用的不是 OpenClaw，也能用吗？",
+          "acceptedAnswer": { "@type": "Answer", "text": "可以。默认路径还指向 ~/.openclaw/* 是历史原因，把 ARS_SESSION_BASE 和 ARS_MEMORY_DB 改成你自己 agent 的路径即可。Claude Code / Codex / Hermes / 任何自定义 agent 都能驱动。" }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Noto+Serif+SC:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg:#F7F7FB; --surface:#FFFFFF; --ink:#15172B; --ink-soft:#2D3043;
+    --muted:#6F7290; --rule:#E0E1EE; --accent:#5B5BD6; --accent-ink:#3B3BAA;
+    --warn:#D9534F; --good:#2E9E76;
+    --code-bg:#1B1D38; --code-fg:#EEEEFB; --code-dim:#9AA0CB; --code-acc:#FFD66E;
+    --serif:"Source Serif 4","Noto Serif SC","Songti SC","STSong",Georgia,serif;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --maxw:1080px; --gutter:clamp(20px,4vw,52px);
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0} html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+  ::selection{background:var(--accent);color:#fff}
+  a{color:inherit;text-decoration:none}
+  a.link{color:var(--ink);border-bottom:1px solid currentColor;padding-bottom:1px;transition:color .15s,border-color .15s}
+  a.link:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gutter)}
+
+  .nav{position:sticky;top:0;z-index:50;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid transparent;transition:border-color .2s}
+  .nav.scrolled{border-bottom-color:var(--rule)}
+  .nav-inner{max-width:var(--maxw);margin:0 auto;padding:18px var(--gutter);display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:500;font-size:18px;letter-spacing:-0.005em}
+  .brand-mark{width:22px;height:22px;display:inline-block;color:var(--accent);font-size:20px;line-height:1}
+  .brand small{font-family:var(--sans);font-weight:450;color:var(--muted);font-size:13px}
+  .nav-links{display:flex;align-items:center;gap:28px;font-size:14px;color:var(--ink-soft)}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-cta{font-size:14px;background:var(--ink);color:#fff;padding:9px 16px;border-radius:999px;transition:background .15s}
+  .nav-cta:hover{background:var(--accent)}
+  @media(max-width:720px){.nav-links a:not(.nav-cta){display:none}}
+
+  .hero{padding:72px 0 56px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:18px}
+  .display{font-family:var(--serif);font-weight:500;font-size:clamp(36px,5.4vw,64px);line-height:1.1;letter-spacing:-0.022em;margin:0 0 24px}
+  .display em{font-style:italic;color:var(--accent)}
+  .lead{font-size:clamp(17px,1.6vw,19px);max-width:720px;color:var(--ink-soft);margin:0 0 32px}
+  .hero-ctas{display:flex;flex-wrap:wrap;gap:14px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;font-size:15px;font-weight:500;border:1px solid transparent;transition:background .15s,border-color .15s,color .15s}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:var(--accent)}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
+  .btn-ghost:hover{border-color:var(--ink)}
+
+  .block{padding:56px 0;border-top:1px solid var(--rule)}
+  .section-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .section-title{font-family:var(--serif);font-weight:500;font-size:clamp(28px,3.4vw,40px);line-height:1.2;letter-spacing:-0.012em;margin:0 0 28px;max-width:780px}
+  .section-title em{font-style:italic;color:var(--accent)}
+  .section-lead{font-size:17px;color:var(--ink-soft);max-width:680px;margin:0 0 28px}
+
+  .grid{display:grid;gap:24px}
+  .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  @media(max-width:720px){.grid.cols-2,.grid.cols-3{grid-template-columns:1fr}}
+
+  .card{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:24px}
+  .card h3{font-family:var(--serif);font-weight:500;font-size:20px;letter-spacing:-0.005em;margin:0 0 8px}
+  .card p{margin:0;color:var(--ink-soft);font-size:15px}
+  .card .tag{font-family:var(--mono);font-size:11px;letter-spacing:0.04em;color:var(--accent-ink);background:color-mix(in oklab,var(--accent) 15%,transparent);padding:3px 8px;border-radius:6px;display:inline-block;margin-bottom:10px}
+  .card.warn .tag{color:var(--warn);background:color-mix(in oklab,var(--warn) 15%,transparent)}
+  .card.good .tag{color:var(--good);background:color-mix(in oklab,var(--good) 15%,transparent)}
+
+  pre.code{background:var(--code-bg);color:var(--code-fg);padding:22px 24px;border-radius:12px;font-family:var(--mono);font-size:13.5px;line-height:1.65;overflow-x:auto;margin:0}
+  pre.code .c{color:var(--code-dim)} pre.code .k{color:var(--code-acc)}
+
+  .faq dt{font-family:var(--serif);font-weight:500;font-size:18px;margin:24px 0 8px;letter-spacing:-0.005em}
+  .faq dt:first-child{margin-top:0}
+  .faq dd{margin:0 0 16px;color:var(--ink-soft);max-width:760px}
+
+  footer{padding:48px 0 56px;border-top:1px solid var(--rule);color:var(--muted);font-size:14px}
+  footer .row{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center}
+  footer a:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark">🧠</span>
+      AgentMesh Runtime <small>· by AgentMesh360</small>
+    </a>
+    <div class="nav-links">
+      <a href="#what">能力</a>
+      <a href="#not">不做</a>
+      <a href="#install">安装</a>
+      <a href="#faq">FAQ</a>
+      <a class="nav-cta" href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub →</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Open source · Apache 2.0 · Local-first</div>
+    <h1 class="display">给你的 AI agent 加上 <em>记忆</em>、<em>循环</em>、和 <em>恢复</em>。</h1>
+    <p class="lead">AgentMesh Runtime 是一层 agent 用的本地运行时脚手架：跨会话的持久情景记忆、有界 OODA 循环记录、崩溃后干净拾起。<strong>智能仍然来自你的 agent</strong>（Claude Code / OpenClaw / Codex / Hermes / 自定义）——这一层只做底下的脏活。</p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="https://github.com/jiyangnan/AgentMesh-Runtime">在 GitHub 上看 →</a>
+      <a class="btn btn-ghost" href="#install">本机跑起来</a>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="what">
+  <div class="wrap">
+    <div class="section-eyebrow">What it gives you</div>
+    <h2 class="section-title">5 件 <em>诚实</em> 的事。</h2>
+    <p class="section-lead">不是 8 件，不是 12 件。下面这些就是代码里真的实现了、能跑的。其余的请看下一段「不做什么」。</p>
+    <div class="grid cols-3">
+      <div class="card good">
+        <span class="tag">memory</span>
+        <h3>持久情景记忆</h3>
+        <p>Neo4j 图 → SQLite FTS5（BM25）→ 文件 grep → 可选 Gemini 向量。任一后端挂掉，其余继续服务。</p>
+      </div>
+      <div class="card good">
+        <span class="tag">loop</span>
+        <h3>OODA 循环脚手架</h3>
+        <p>Observe / Orient / Decide / Act / Verify / Record 状态机。每一步落到持久轨迹。<strong>决策由你的 agent 给</strong>。</p>
+      </div>
+      <div class="card good">
+        <span class="tag">recovery</span>
+        <h3>崩溃 / 重启恢复</h3>
+        <p>SQLite ↔ Neo4j 延迟同步账本、checkpoint 存储、<code>rehydrate</code> 一键重建"我刚才到哪了"。</p>
+      </div>
+      <div class="card good">
+        <span class="tag">health</span>
+        <h3>一键自检</h3>
+        <p><code>doctor</code> 输出 JSON：Neo4j 连通、SQLite 健康、账本漂移、checkpoint 状态。</p>
+      </div>
+      <div class="card good">
+        <span class="tag">anti-pattern</span>
+        <h3>规则式反模式检测</h3>
+        <p><code>blind_retry</code> / <code>phantom_progress</code> / <code>pivot_exhaustion</code>，是计数器和阈值，不是魔法。</p>
+      </div>
+      <div class="card">
+        <span class="tag">+</span>
+        <h3>给 agent 而非给人</h3>
+        <p>整个仓库设计为 agent 调用。看 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md">AGENTS.md</a>，里面写了什么时候 ingest、什么时候 rehydrate、什么话<strong>不能</strong>对人类许诺。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="not">
+  <div class="wrap">
+    <div class="section-eyebrow">What it is NOT</div>
+    <h2 class="section-title">4 件 <em>明确</em> 不做的事。</h2>
+    <p class="section-lead">这层的边界讲清楚，才不会让你和你的 agent 误以为它能干别的事。</p>
+    <div class="grid cols-2">
+      <div class="card warn">
+        <span class="tag">not an LLM</span>
+        <h3>不带 AI 模型</h3>
+        <p>它给你已经在用的 agent 做脚手架。没有内置 LLM，也不打算有。</p>
+      </div>
+      <div class="card warn">
+        <span class="tag">not a SaaS</span>
+        <h3>不在云上跑</h3>
+        <p>没有云服务、没有账户、没有 API key。完全本地。Gemini 向量召回是可选的，且 key 由你提供。</p>
+      </div>
+      <div class="card warn">
+        <span class="tag">not a brain</span>
+        <h3>不替你做决策</h3>
+        <p>OODA 循环的 <code>decide()</code> 和 <code>verify()</code> 是有意做小的存根。真正的推理来自你的 agent。</p>
+      </div>
+      <div class="card warn">
+        <span class="tag">not at scale yet</span>
+        <h3>不是大规模系统</h3>
+        <p>向量层是 O(n) 暴力余弦。个人 / 小团队规模够用。百万级向量请外置 pgvector / faiss。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="install">
+  <div class="wrap">
+    <div class="section-eyebrow">Install &amp; use</div>
+    <h2 class="section-title">两条命令，<em>开跑</em>。</h2>
+    <pre class="code"><span class="c"># clone + install</span>
+git clone https://github.com/jiyangnan/AgentMesh-Runtime.git
+cd AgentMesh-Runtime
+uv sync
+
+<span class="c"># 自检</span>
+uv run <span class="k">agentmesh-runtime</span> doctor
+
+<span class="c"># 召回记忆 / 摄入会话</span>
+uv run <span class="k">agentmesh-runtime</span> memory recall <span class="k">"your query"</span> --top-k 5
+uv run <span class="k">agentmesh-runtime</span> memory ingest-file /path/to/session.jsonl discord
+
+<span class="c"># OODA demo · 崩溃恢复</span>
+uv run <span class="k">agentmesh-runtime</span> demo
+uv run <span class="k">agentmesh-runtime</span> rehydrate --write-default --print-path
+
+<span class="c"># 短别名：amr 可替换 agentmesh-runtime</span></pre>
+    <p class="section-lead" style="margin-top:24px">需要图后端？仓库里带一个 <code>docker/docker-compose.neo4j.yml</code>，<code>docker compose up</code> 就行。</p>
+  </div>
+</section>
+
+<section class="block" id="faq">
+  <div class="wrap">
+    <div class="section-eyebrow">FAQ</div>
+    <h2 class="section-title">问到底。</h2>
+    <dl class="faq">
+      <dt>它自己带 LLM 吗？</dt>
+      <dd>不带。这是脚手架，智能由你已经在用的 agent（Claude Code / OpenClaw / Codex / Hermes / 自定义）提供。脚手架做的是记忆、循环记录、崩溃恢复这些底层事情。</dd>
+
+      <dt>它会上云吗？需要账户或 API key 吗？</dt>
+      <dd>不会，也不需要。所有数据都在你自己的机器上，没有 AgentMesh360 账户、云服务或 key 要求。可选的 Gemini 向量召回需要你自己的 <code>GEMINI_API_KEY</code>。</dd>
+
+      <dt>OODA 循环会替我决策吗？</dt>
+      <dd>不会。<code>decide</code> 和 <code>verify</code> 步骤是有意做小的状态机存根——它们记录你做了什么，但不替你想下一步。真正的推理由你的 agent 出。</dd>
+
+      <dt>我用的不是 OpenClaw，也能用吗？</dt>
+      <dd>可以。默认路径还指向 <code>~/.openclaw/*</code> 是历史原因，把 <code>ARS_SESSION_BASE</code> 和 <code>ARS_MEMORY_DB</code> 改成你自己 agent 的路径即可。Claude Code / Codex / Hermes / 任何自定义 agent 都能驱动。</dd>
+
+      <dt>未来会做托管服务吗？</dt>
+      <dd>暂时不做。如果有真实用户问"能帮我托管 Neo4j 吗"，会做一个**只托管数据库**的极薄 server——不是智能层。决策见 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/README.md">docs/decisions/</a>。</dd>
+    </dl>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap row">
+    <span>© 2026 AgentMesh Runtime · Apache 2.0</span>
+    <span>
+      <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a> ·
+      <a class="link" href="https://agentmesh360.com/">AgentMesh360</a> ·
+      <a class="link" href="/llms.txt">llms.txt</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  const n=document.getElementById('nav');
+  const onScroll=()=>n.classList.toggle('scrolled',window.scrollY>4);
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+</script>
+
+</body>
+</html>
