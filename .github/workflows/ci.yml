@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Pin Python ${{ matrix.python-version }}
+        env:
+          PY_VERSION: ${{ matrix.python-version }}
+        run: echo "$PY_VERSION" > .python-version
+
+      - name: uv sync (with dev extras)
+        run: uv sync --extra dev
+
+      - name: Import smoke — all package modules
+        run: |
+          uv run python - <<'PY'
+          from agentmesh_runtime import (
+              autonomous_loop, checkpoint_store, episode_ingest,
+              journal_to_episode, kb_to_graph, neo4j_recall,
+              startup_rehydrate, sync_backfill, sync_state,
+              unified_memory_recall, vector_store, cli,
+          )
+          print("OK: all 12 modules import")
+          PY
+
+      - name: CLI smoke — three names resolve
+        run: |
+          uv run agentmesh-runtime --help > /dev/null
+          uv run amr --help > /dev/null
+          uv run xng --help > /dev/null
+
+      - name: doctor produces JSON
+        run: |
+          uv run agentmesh-runtime doctor | python -m json.tool > /dev/null
+          echo "doctor produced valid JSON"
+
+      - name: pytest
+        run: uv run pytest -v
+
+      - name: ruff (informational)
+        run: uv run ruff check src/ || true
