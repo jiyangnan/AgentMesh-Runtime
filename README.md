@@ -1,283 +1,95 @@
-# agent-reinforcement-system
+# AgentMesh Runtime
 
-> Official command surface: **xiaonangua CLI** (`xng`)
+English · [中文](README.zh.md)
 
-A production-minded agent runtime toolkit built around three reinforcement layers:
+> 🟣 Part of **[AgentMesh](https://github.com/jiyangnan/agentmesh-core)** — see the [ecosystem index](https://github.com/jiyangnan/agentmesh-core/blob/main/docs/ECOSYSTEM.md) for all related repos.
 
-1. **First-Principles Runtime** — forces the agent to reason from axioms instead of habits.
-2. **HA Episodic Memory** — a high-availability local memory stack with automatic failover across Neo4j, SQLite FTS, and raw session/files.
-3. **Autonomous-Loop** — a bounded execution loop that lets the agent keep pushing a goal until it is done, blocked, waiting for human input, or aborted.
-4. **Consistency and Recovery** — a deferred sync + checkpoint + rehydrate layer that keeps SQLite and Neo4j eventually consistent across restart-order failures and restores working state after reboot.
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](#)
+[![Brand](https://img.shields.io/badge/brand-AgentMesh-6E4AFF.svg)](https://agentmesh360.com)
+[![Website](https://img.shields.io/badge/website-runtime.agentmesh360.com-CC785C.svg)](https://runtime.agentmesh360.com)
 
-This repository packages the core runtime pieces so another agent/operator can reproduce the same behavior: stricter reasoning, durable memory, and bounded autonomous execution.
+> **Local-first runtime scaffolding for AI agents.** Give your agent (Claude Code, OpenClaw, Codex, Hermes, anything) a persistent memory across sessions, a bounded loop that records its work, and a clean way to pick up where it left off after a crash or restart. Everything stays on your machine.
 
----
+This is the runtime layer *underneath* your agent — it doesn't bring its own LLM, it doesn't make decisions for you. Your agent is still the brain. AgentMesh Runtime is the scaffolding that lets the brain remember, retry, and recover.
 
-## Why this exists
+## What this gives you (honest list)
 
-Most agent demos break in three predictable ways:
-- reasoning becomes hand-wavy
-- memory disappears when one backend fails
-- autonomy loops without a bounded runtime contract
+- 🧠 **Persistent episodic memory.** Multi-backend recall — Neo4j graph → SQLite FTS5 (BM25) → raw-file grep → optional Gemini vector. Any backend can fail and the others keep serving.
+- 🔁 **Bounded OODA loop scaffolding.** A state machine that records every Observe / Orient / Decide / Act / Verify / Record step into a durable trace. *Your agent supplies the actual decisions* — this just enforces the discipline and the log.
+- 🛟 **Crash / restart recovery.** Deferred sync ledger across SQLite ↔ Neo4j, checkpoint store, and a `rehydrate` command that rebuilds "where I was" after an unexpected restart.
+- 🩺 **Self-check.** `agentmesh-runtime doctor` reports Neo4j connectivity, SQLite health, ledger drift, and checkpoint state in one JSON blob.
+- 🚧 **Rule-based anti-pattern detector** for OODA loops — `blind_retry` / `phantom_progress` / `pivot_exhaustion`. Plain counters and thresholds, not magic.
 
-This repo fixes those three failure modes as one system.
+## What this is *not*
 
----
-
-## What this project gives you
-
-### Module 1 — First-Principles Runtime
-Turns “first-principles-only” from a vague prompt idea into a runtime discipline.
-
-**Effects**
-- reduces hand-wavy answers
-- forces explicit assumptions
-- improves debugging and root-cause analysis
-- makes output more explainable and auditable
-
-### Module 2 — High-Availability Episodic Memory
-Builds a local memory layer that does **not collapse when one backend fails**.
-
-**Recall order**
-1. Neo4j episode graph
-2. SQLite FTS
-3. raw memory/session grep
-
-**Effects**
-- avoids single-provider amnesia
-- enables durable recall of prior sessions, decisions, and upgrades
-- keeps memory usable even when embeddings or graph services fail
-
-### Module 3 — Autonomous-Loop
-Builds the execution reinforcement layer:
-- Observe
-- Orient
-- Decide
-- Act
-- Verify
-- Record
-- Loop / Exit
-
-This is what turns the agent from a smart responder into a bounded autonomous worker.
-
-**Integrated runtime behavior**
-- **Observe** calls HA memory recall
-- **Orient / Decide** use first-principles reasoning rules
-- **Record** writes loop memory events to both the runtime log and the main memory index
-
-**Core runtime artifacts**
-- `docs/module-3-autonomous-loop.md`
-- `docs/module-4-consistency-and-recovery.md`
-- `schemas/goal_frame.schema.json`
-- `schemas/loop_state.schema.json`
-- `src/autonomous_loop.py`
-- `src/checkpoint_store.py`
-- `src/startup_rehydrate.py`
-- `src/sync_backfill.py`
-- `src/sync_state.py`
+- ❌ Not an LLM and not an agent. It scaffolds the agent you already use.
+- ❌ Not a hosted service. There is no cloud, no account, no API key.
+- ❌ Not a smart "OODA Policy Engine." The next-step logic is a tiny state machine; your agent decides what to actually do.
+- ❌ Not (yet) a high-scale system. The vector layer is O(n) brute-force cosine — fine for personal / small-team scale; if you grow to millions of vectors, swap in pgvector or faiss.
 
 ---
 
-## Repo structure
+## Install
 
-```text
-agent-reinforcement-system/
-├── README.md
-├── pyproject.toml
-├── requirements.txt
-├── xng
-├── docs/
-│   ├── architecture.md
-│   ├── module-1-first-principles.md
-│   ├── module-2-ha-episodic-memory.md
-│   ├── module-3-autonomous-loop.md
-│   ├── module-4-consistency-and-recovery.md
-│   └── quickstart.md
-├── src/
-│   ├── autonomous_loop.py
-│   ├── checkpoint_store.py
-│   ├── episode_ingest.py
-│   ├── neo4j_recall.py
-│   ├── startup_rehydrate.py
-│   ├── sync_backfill.py
-│   ├── sync_state.py
-│   ├── unified_memory_recall.py
-│   └── xng.py
-├── examples/
-│   ├── first_principles_system_prompt.md
-│   ├── goal_frame.example.json
-│   └── env.example
-├── schemas/
-│   ├── goal_frame.schema.json
-│   └── loop_state.schema.json
-└── docker/
-    └── docker-compose.neo4j.yml
+```bash
+git clone https://github.com/jiyangnan/AgentMesh-Runtime.git
+cd AgentMesh-Runtime
+uv sync
 ```
+
+You'll also need a running **Neo4j** (Community Edition is fine) if you want the graph backend. There's a `docker/docker-compose.neo4j.yml` you can `docker compose up`.
+
+## Use
+
+```bash
+# environment self-check (JSON report)
+uv run agentmesh-runtime doctor
+
+# recall episodic memory
+uv run agentmesh-runtime memory recall "your query here" --top-k 5
+
+# ingest a session transcript
+uv run agentmesh-runtime memory ingest-file /path/to/session.jsonl discord
+
+# run the bundled OODA-loop demo against examples/goal_frame.example.json
+uv run agentmesh-runtime demo
+
+# rebuild "where I was" after a restart
+uv run agentmesh-runtime rehydrate --write-default --print-path
+```
+
+Short alias: `amr` works wherever `agentmesh-runtime` does. The legacy `xng` name still works for one release.
+
+## Configure
+
+All paths and endpoints come from environment variables — no config file:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `ARS_NEO4J_URI` | `bolt://localhost:7687` | Neo4j endpoint |
+| `ARS_NEO4J_USER` | `neo4j` | Neo4j user |
+| `ARS_NEO4J_PASSWORD` | `password` | Neo4j password |
+| `ARS_SESSION_BASE` | `~/.openclaw/agents` | Root of `<agent>/sessions/*.jsonl` transcripts |
+| `ARS_MEMORY_DB` | `~/.openclaw/memory/main.sqlite` | SQLite DB path |
+| `ARS_WORKSPACE` | `$PWD` | Workspace root |
+| `GEMINI_API_KEY` | *(unset)* | Enables Gemini-embedding vector recall |
+| `AGENTMESH_RUNTIME_DOH_BYPASS` | `0` | Set to `1` to enable DoH fallback for hostnames behind transparent-proxy DNS hijack |
+
+> The defaults still point at `~/.openclaw/*` because that's where this code originally lived. If you don't run OpenClaw, set `ARS_SESSION_BASE` and `ARS_MEMORY_DB` to wherever you keep agent transcripts and memory. Renaming the env prefix to `AGENTMESH_RUNTIME_*` is on the roadmap.
 
 ---
 
-## Quick start
+## Driving this from an AI agent
 
-### CLI identity
-- Product name: **xiaonangua CLI**
-- Command: **`xng`**
+This whole repo is meant to be **invoked by your agent**, not by you. Start with **[AGENTS.md](AGENTS.md)** — it tells the agent how to use the commands inside a session, when to ingest, when to rehydrate, and what *not* to promise the human.
 
-### Install
-```bash
-pip install -e .
-```
+## Status
 
-After install:
-```bash
-xng doctor
-```
-
-For local no-install usage:
-```bash
-./xng doctor
-```
-
-### 1. Start Neo4j
-```bash
-cd docker
-cp ../examples/env.example .env
-docker compose -f docker-compose.neo4j.yml up -d
-```
-
-### 2. Install Python deps
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-### 3. Set environment
-```bash
-export ARS_NEO4J_URI=bolt://localhost:7687
-export ARS_NEO4J_USER=neo4j
-export ARS_NEO4J_PASSWORD=password
-export ARS_SESSION_BASE=~/.openclaw/agents
-export ARS_MEMORY_DB=~/.openclaw/memory/main.sqlite
-export ARS_WORKSPACE=$PWD
-```
-
-### 4. Ingest sessions
-```bash
-xng memory ingest-file /path/to/session.jsonl discord
-```
-
-### 5. Recall memory
-```bash
-xng memory recall "First-Principles-Only"
-xng memory recall "Hybrid-Vector-Graph neo4j ollama"
-```
-
-### 6. Run the autonomous loop demo
-```bash
-xng demo
-xng loop run examples/goal_frame.example.json
-```
-
-### 7. Generate startup recovery context
-```bash
-xng rehydrate
-xng rehydrate --write-default --print-path
-xng bootstrap
-xng bootstrap --stdout
-```
-
-Standard startup recovery paths:
-- JSON snapshot → `state/rehydrate-snapshot.json`
-- bootstrap text → `state/startup-context.txt`
-
-This demo now exercises the integrated stack:
-- recalls prior memory through `unified_memory_recall.py`
-- uses first-principles-oriented reasoning for action selection
-- writes loop events to `./runtime/loop_memory.jsonl`
-- persists loop events into the main Neo4j + SQLite memory path
-
----
-
-## Key design principle
-
-> Memory must degrade gracefully, not disappear.
-
-If Neo4j fails, SQLite still works.
-If SQLite fails, raw file recall still works.
-If embeddings fail, keyword + graph recall still works.
-
----
-
-## CLI commands
-
-```bash
-xng --help
-xng memory --help
-xng loop --help
-
-xng memory recall "query"
-xng memory ingest-file path/to/session.jsonl
-xng memory ingest-session <session-id>
-xng loop run examples/goal_frame.example.json
-xng loop step examples/goal_frame.example.json
-xng sync status
-xng sync backfill
-xng rehydrate
-xng bootstrap
-xng doctor
-xng demo
-```
-
----
-
-## Polish / repo hygiene
-
-- runtime logs are ignored (`runtime/*.jsonl`)
-- state ledgers/checkpoints are ignored (`state/*.jsonl`, `state/checkpoints/`)
-- packaging artifacts are ignored (`*.egg-info/`)
-- installable entrypoint is defined in `pyproject.toml`
-
-## Core scripts
-
-### `src/episode_ingest.py`
-- ingests session transcripts into SQLite + Neo4j
-- writes SQLite first, then Neo4j
-- supports `ingest`, `ingest-file`, `idle`, and `ending`
-- extracts topics and entities
-- rebuild-safe: stable IDs + relationship reset before rebuild
-
-### `src/unified_memory_recall.py`
-- single recall entrypoint
-- ranks results across backends
-- down-ranks current-session echo
-- prefers meaningful entity hits over technical noise
-
-### `src/neo4j_recall.py`
-- lightweight Neo4j-only recall script
-- useful for debugging the graph layer directly
-
-### `src/autonomous_loop.py`
-- executable bounded autonomy skeleton
-- enforces loop state transitions
-- integrates first-principles reasoning + HA memory recall
-- supports `step` and `run`
-- serializes loop state to JSON
-
-### `src/xng.py`
-- unified CLI surface for the whole runtime
-- wraps memory, loop, sync, doctor, rehydrate, bootstrap, and demo flows
-
----
-
-## Reproducibility goal
-
-This repo is meant to let another operator reproduce the same reinforcement capabilities used in the original assistant:
-- a first-principles reasoning discipline
-- a robust local episodic memory system
-- a bounded autonomous execution loop
-
----
+Alpha. The memory and consistency-recovery layers have shipped real work and have a clean test record. The OODA loop scaffolding works but its "decision intelligence" is intentionally minimal — that part is supposed to come from your agent, not from us.
 
 ## License
 
-MIT
+Apache 2.0. See [LICENSE](LICENSE).
+
+For the cross-agent process that produced this product's current shape (and what was deliberately *not* built), see [docs/decisions/](docs/decisions/README.md).

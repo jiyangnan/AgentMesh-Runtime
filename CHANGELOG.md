@@ -1,24 +1,28 @@
 # Changelog
 
-## v2.2.0 — 2026-06-18
+## 0.1.0 — Unreleased
 
-### Phase 1-3 运行时优化
+First public release as **AgentMesh Runtime** — a productized fork of the internal `agent-reinforcement-system` runtime that originally lived inside the author's OpenClaw agent.
 
-#### New: context-brief（动态上下文摘要）
-- `scripts/update_context_brief.py` — 自动维护 context-brief.md
-- `skills/context-brief/SKILL.md` — Skill 文档
+### Why it exists
+This release does not add new runtime capabilities. It strips the previous codebase of operator-specific identifiers, generalizes hard-coded paths, aligns the toolchain with the rest of the AgentMesh ecosystem, and reframes the public surface as honest scaffolding — not a "runtime AI."
 
-#### New: heartbeat-systemic（系统性心跳自检）
-- `scripts/heartbeat_systemic.py` — 6 项健康检查（MEMORY/Neo4j/Cron/context-brief/sync/temp）
-- `skills/heartbeat-systemic/SKILL.md` — Skill 文档
+### Changed (breaking vs. internal predecessor)
+- **Repo**: forked snapshot of `agent-reinforcement-system @ 5081a98`; no upstream coupling. Future iteration happens here.
+- **License**: MIT → **Apache 2.0**.
+- **Package**: flat `src/*.py` modules → proper `src/agentmesh_runtime/` package with relative imports.
+- **Build / toolchain**: `pip + setuptools + requirements.txt` → **`uv + hatchling`** with locked `uv.lock`.
+- **CLI**: `xng` → **`agentmesh-runtime`** (primary) + **`amr`** (short alias). `xng` is preserved as a deprecated alias for one release.
+- **Sanitization**: removed hard-coded operator entities (people, projects, agent rosters), per-episode downweighting hacks, and brand-specific DNS bypass defaults. The DoH fallback in `vector_store.py` now only activates when `AGENTMESH_RUNTIME_DOH_BYPASS=1` is set explicitly.
+- **Agent roster**: previously hard-coded `["main", "growth", "invest"]` → auto-discovery of `<SESSION_BASE>/<agent>/sessions/` subdirectories.
 
-#### New: ooda-anti-patterns（OODA 闭环反模式检测）
-- `skills/ooda-anti-patterns/SKILL.md` — 三种反模式文档
-- 集成到 `scripts/ooda-driver.py`：blind_retry / phantom_progress / pivot_exhaustion
+### Marketing / framing
+- Removed the "first-principles runtime" claim from headline messaging — the code did not implement a runtime distinct from the system prompt template, so the claim was unhonest.
+- OODA loop is now framed as **scaffolding** — the `decide()` and `verify()` steps are intentionally minimal stubs, and the README + AGENTS.md say so explicitly. Real reasoning is expected to come from the caller agent.
 
-#### Updated: ha-memory（情景记忆系统）
-- `src/vector_store.py` — Gemini Embedding 向量存储（gemini-embedding-2, 3072维, DoH DNS绕过）
-- `src/unified_memory_recall.py` — 新增向量检索后端（recall_vector, weight=1.5）
+### Not in this release
+- No hosted service.
+- No multi-tenant Server, no credit/billing, no LLM-backed decision/verify layer. See `docs/decisions/2026-06-21-final-direction.md` for why this was a deliberate scope cut.
 
-#### Updated: ooda-loop
-- `scripts/ooda-driver.py` — 反模式检测 + prompt 注入
+### Cross-agent decision record
+The discovery and disagreement process that produced this product shape is preserved in [`docs/decisions/`](docs/decisions/README.md), including Codex's two analyses and Claude Code's facts-based synthesis.

@@ -64,7 +64,7 @@ tags: [agentmesh, runtime, 决策, 纯开源化, 单仓]
 - ✅ OODA 状态机骨架（决策智能由调用方 agent 提供）
 - ✅ 反模式检测（规则版）
 - ❌ **不再宣传** "first-principles runtime"（代码层不存在）
-- ❌ **不再宣传** "FTS"（实为 LIKE）
+- ⚠️ ~~不再宣传 "FTS"（实为 LIKE）~~ ← **此条已撤回**：2026-06-22 执行 Phase 1.2 时实际核对代码，recall_sqlite() 用的是真 FTS5（bm25 + snippet），FTS 卖点真实成立，不需要改口。
 
 **2.2-2.4**：可选落地页 / CI / 发布。
 
