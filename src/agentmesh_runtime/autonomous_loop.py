@@ -22,9 +22,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from unified_memory_recall import recall as memory_recall
-from episode_ingest import ingest_event
-from checkpoint_store import save_checkpoint
+from .unified_memory_recall import recall as memory_recall
+from .episode_ingest import ingest_event
+from .checkpoint_store import save_checkpoint
 
 VALID_STATUSES = {"initialized", "active", "waiting_human", "blocked", "done", "aborted"}
 VALID_STEPS = ["observe", "orient", "decide", "act", "verify", "record"]

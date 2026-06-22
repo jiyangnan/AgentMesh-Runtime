@@ -16,7 +16,7 @@ _src_dir = os.path.join(os.path.dirname(_scripts_dir), "src")
 if _src_dir not in sys.path:
     sys.path.insert(0, _src_dir)
 
-from sync_state import append_ledger_event
+from .sync_state import append_ledger_event
 
 
 NEO4J_URI = os.getenv("ARS_NEO4J_URI", "bolt://localhost:7687")

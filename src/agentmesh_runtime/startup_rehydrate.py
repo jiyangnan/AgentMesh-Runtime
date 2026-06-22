@@ -8,9 +8,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from checkpoint_store import list_checkpoints, list_open_checkpoints
-from sync_state import STATE_DIR, sync_status_report
-from unified_memory_recall import recall
+from .checkpoint_store import list_checkpoints, list_open_checkpoints
+from .sync_state import STATE_DIR, sync_status_report
+from .unified_memory_recall import recall
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REHYDRATE_PATH = Path(STATE_DIR) / "rehydrate-snapshot.json"

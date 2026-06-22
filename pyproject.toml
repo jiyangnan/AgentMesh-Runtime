@@ -1,26 +1,45 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
-name = "xiaonangua-cli"
+name = "agentmesh-runtime"
 version = "0.1.0"
-description = "xiaonangua CLI: first-principles runtime, HA episodic memory, and autonomous loop"
+description = "Open-source runtime scaffolding for AI agents — persistent memory, OODA loop recording, and rehydrate-on-restart, all local-first."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 authors = [
-  { name = "AgentMesh Runtime contributors" }
+    { name = "AgentMesh Runtime contributors" },
+]
+keywords = [
+    "agent",
+    "agentmesh",
+    "runtime",
+    "memory",
+    "neo4j",
+    "ooda",
+    "local-first",
 ]
 dependencies = [
-  "neo4j>=5.20.0"
+    "neo4j>=5.20",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.7",
 ]
 
 [project.scripts]
-xng = "xng:main"
+agentmesh-runtime = "agentmesh_runtime.cli:main"
+amr = "agentmesh_runtime.cli:main"
+xng = "agentmesh_runtime.cli:main"
 
-[tool.setuptools]
-py-modules = ["xng", "episode_ingest", "unified_memory_recall", "neo4j_recall", "autonomous_loop", "sync_state", "sync_backfill", "checkpoint_store", "startup_rehydrate", "vector_store"]
+[project.urls]
+Homepage = "https://runtime.agentmesh360.com"
+Repository = "https://github.com/jiyangnan/AgentMesh-Runtime"
+Issues = "https://github.com/jiyangnan/AgentMesh-Runtime/issues"
 
-[tool.setuptools.package-dir]
-"" = "src"
+[tool.hatch.build.targets.wheel]
+packages = ["src/agentmesh_runtime"]

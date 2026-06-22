@@ -8,17 +8,17 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / "src"
+PACKAGE = "agentmesh_runtime"
 
 
 class RichHelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
     pass
 
 
-def run_py(script: str, args: list[str]) -> int:
-    cmd = [sys.executable, str(SRC / script), *args]
-    return subprocess.call(cmd, cwd=ROOT)
+def run_py(module: str, args: list[str]) -> int:
+    """Delegate to a sibling module's ``__main__`` block via ``python -m``."""
+    cmd = [sys.executable, "-m", f"{PACKAGE}.{module}", *args]
+    return subprocess.call(cmd)
 
 
 def cmd_memory(ns: argparse.Namespace) -> int:
@@ -32,11 +32,11 @@ def cmd_memory(ns: argparse.Namespace) -> int:
             args.append("--no-sqlite")
         if ns.no_files:
             args.append("--no-files")
-        return run_py("unified_memory_recall.py", args)
+        return run_py("unified_memory_recall", args)
     if ns.memory_cmd == "ingest-file":
-        return run_py("episode_ingest.py", ["ingest-file", ns.path, ns.channel])
+        return run_py("episode_ingest", ["ingest-file", ns.path, ns.channel])
     if ns.memory_cmd == "ingest-session":
-        return run_py("episode_ingest.py", ["ingest", ns.session_id, ns.channel])
+        return run_py("episode_ingest", ["ingest", ns.session_id, ns.channel])
     print("unknown memory command", file=sys.stderr)
     return 2
 
@@ -48,21 +48,21 @@ def cmd_loop(ns: argparse.Namespace) -> int:
     if ns.out:
         args += ["--out", ns.out]
     args += ["--mode", ns.loop_cmd]
-    return run_py("autonomous_loop.py", args)
+    return run_py("autonomous_loop", args)
 
 
 def cmd_doctor(_: argparse.Namespace) -> int:
     report = {
-        "cwd": str(ROOT),
+        "cwd": os.getcwd(),
         "neo4j_uri": os.getenv("ARS_NEO4J_URI", "bolt://localhost:7687"),
         "session_base": os.getenv("ARS_SESSION_BASE", os.path.expanduser("~/.openclaw/agents")),
         "memory_db": os.getenv("ARS_MEMORY_DB", os.path.expanduser("~/.openclaw/memory/main.sqlite")),
-        "workspace": os.getenv("ARS_WORKSPACE", str(ROOT)),
+        "workspace": os.getenv("ARS_WORKSPACE", os.getcwd()),
         "checks": {},
     }
     import socket, sqlite3
-    from sync_state import STATE_DIR, sync_status_report
-    from checkpoint_store import checkpoint_summary
+    from .sync_state import STATE_DIR, sync_status_report
+    from .checkpoint_store import checkpoint_summary
 
     host, port = "localhost", 7687
     try:
@@ -91,12 +91,12 @@ def cmd_doctor(_: argparse.Namespace) -> int:
 
 def cmd_sync(ns: argparse.Namespace) -> int:
     if ns.sync_cmd == "status":
-        return run_py("sync_backfill.py", ["status"])
+        return run_py("sync_backfill", ["status"])
     if ns.sync_cmd == "backfill":
         args = ["backfill"]
         if ns.limit is not None:
             args.append(str(ns.limit))
-        return run_py("sync_backfill.py", args)
+        return run_py("sync_backfill", args)
     print("unknown sync command", file=sys.stderr)
     return 2
 
@@ -109,7 +109,7 @@ def cmd_rehydrate(ns: argparse.Namespace) -> int:
         args.append("--write-default")
     if ns.print_path:
         args.append("--print-path")
-    return run_py("startup_rehydrate.py", args)
+    return run_py("startup_rehydrate", args)
 
 
 def cmd_bootstrap(ns: argparse.Namespace) -> int:
@@ -121,28 +121,41 @@ def cmd_bootstrap(ns: argparse.Namespace) -> int:
         args.append("--print-path")
     if ns.stdout:
         pass
-    return run_py("startup_rehydrate.py", args)
+    return run_py("startup_rehydrate", args)
 
 
 def cmd_demo(_: argparse.Namespace) -> int:
-    goal = str(ROOT / "examples" / "goal_frame.example.json")
-    return run_py("autonomous_loop.py", [goal, "--mode", "run"])
+    # Look for examples/goal_frame.example.json relative to cwd; fall back to
+    # the file shipped alongside the installed package (useful after ``pip
+    # install`` without cloning the repo).
+    candidates = [
+        Path.cwd() / "examples" / "goal_frame.example.json",
+        Path(__file__).resolve().parent.parent.parent / "examples" / "goal_frame.example.json",
+    ]
+    for c in candidates:
+        if c.exists():
+            return run_py("autonomous_loop", [str(c), "--mode", "run"])
+    print("demo example not found; run from the repo root or pass a path explicitly", file=sys.stderr)
+    return 2
 
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="xng",
-        description="xiaonangua CLI — first-principles reasoning, HA memory, and bounded autonomy.",
+        prog="agentmesh-runtime",
+        description=(
+            "AgentMesh Runtime CLI — persistent memory, OODA loop scaffolding, "
+            "and recovery for your AI agents."
+        ),
         epilog=(
             "Examples:\n"
-            "  xng doctor\n"
-            "  xng memory recall \"First-Principles-Only\"\n"
-            "  xng memory ingest-file /path/to/session.jsonl discord\n"
-            "  xng loop run examples/goal_frame.example.json\n"
-            "  xng sync status\n"
-            "  xng rehydrate --write-default --print-path\n"
-            "  xng bootstrap\n"
-            "  xng demo"
+            "  agentmesh-runtime doctor\n"
+            "  agentmesh-runtime memory recall \"some query\"\n"
+            "  agentmesh-runtime memory ingest-file /path/to/session.jsonl discord\n"
+            "  agentmesh-runtime loop run examples/goal_frame.example.json\n"
+            "  agentmesh-runtime sync status\n"
+            "  agentmesh-runtime rehydrate --write-default --print-path\n"
+            "  agentmesh-runtime bootstrap\n"
+            "  agentmesh-runtime demo"
         ),
         formatter_class=RichHelpFormatter,
     )

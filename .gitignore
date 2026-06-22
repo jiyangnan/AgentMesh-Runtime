@@ -12,3 +12,8 @@ state/checkpoints/
 state/rehydrate-snapshot.json
 state/startup-context.txt
 state/episodic.db
+
+# uv / virtualenv
+.venv/
+__pycache__/
+*.egg-info/

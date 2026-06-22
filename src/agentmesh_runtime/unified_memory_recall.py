@@ -64,7 +64,7 @@ def _get_vs() -> Optional["VectorStore"]:
             _VS = False
             return None
         try:
-            from vector_store import VectorStore
+            from .vector_store import VectorStore
             _VS = VectorStore()
         except Exception:
             _VS = False

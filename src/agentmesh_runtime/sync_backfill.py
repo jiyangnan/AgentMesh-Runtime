@@ -6,8 +6,8 @@ import sqlite3
 import sys
 from typing import Any
 
-from episode_ingest import MEMORY_DB, _clean_text, extract_entities, neo4j_write, TOPIC_KEYWORDS
-from sync_state import append_ledger_event, neo4j_is_ready, pending_ledger_entries, sync_status_report
+from .episode_ingest import MEMORY_DB, _clean_text, extract_entities, neo4j_write, TOPIC_KEYWORDS
+from .sync_state import append_ledger_event, neo4j_is_ready, pending_ledger_entries, sync_status_report
 
 
 def fetch_sqlite_event(session_id: str) -> dict[str, Any] | None:
