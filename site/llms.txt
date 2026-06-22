@@ -6,6 +6,15 @@ AgentMesh Runtime is an open-source, local-first runtime-scaffolding library in 
 
 https://runtime.agentmesh360.com/
 
+## Available Languages
+
+- 中文 (zh-CN, default): https://runtime.agentmesh360.com/
+- English (en): https://runtime.agentmesh360.com/en/
+- 日本語 (ja): https://runtime.agentmesh360.com/ja/
+- 한국어 (ko): https://runtime.agentmesh360.com/ko/
+
+Non-Chinese pages are machine-assisted translations; the Chinese page is authoritative for any conflict.
+
 ## Product Summary
 
 - Category: local-first runtime scaffolding for AI agents.

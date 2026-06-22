@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AgentMesh Runtime — あなたの AI エージェントに記憶と復旧を · オープンソースのローカル足場</title>
+<meta name="description" content="AgentMesh Runtime は AgentMesh360 エコシステムのオープンソース・ローカルツールです。Claude Code / OpenClaw / Codex / Hermes など、あなたが使っている AI エージェントに、セッション横断の永続記憶、有界 OODA ループの記録、クラッシュ復旧を追加します。すべてあなたのマシン上で動き、アカウント不要、Apache 2.0。" />
+<meta property="og:title" content="AgentMesh Runtime — あなたの AI エージェントに記憶と復旧を" />
+<meta property="og:description" content="オープンソースのローカル足場：セッション横断の永続記憶、有界 OODA ループ、クラッシュ復旧。すべてあなたのマシン上で動作。知能はあなたのエージェントから、足場は私たちから。" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://runtime.agentmesh360.com/ja/" />
+<meta property="og:site_name" content="AgentMesh Runtime · AgentMesh360" />
+<meta property="og:locale" content="ja_JP" />
+<meta name="robots" content="index,follow,max-image-preview:large" />
+<meta name="theme-color" content="#0E8A6E" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="AgentMesh Runtime — オープンソースのローカル AI エージェント・ランタイム足場" />
+<meta name="twitter:description" content="AI エージェントに永続記憶・OODA ループ記録・クラッシュ復旧を追加。ローカル動作、Apache 2.0。" />
+<link rel="canonical" href="https://runtime.agentmesh360.com/ja/" />
+<link rel="alternate" type="text/markdown" href="/llms.txt" title="AgentMesh Runtime LLMs.txt" />
+<link rel="alternate" hreflang="zh-CN" href="https://runtime.agentmesh360.com/" />
+<link rel="alternate" hreflang="en" href="https://runtime.agentmesh360.com/en/" />
+<link rel="alternate" hreflang="ja" href="https://runtime.agentmesh360.com/ja/" />
+<link rel="alternate" hreflang="ko" href="https://runtime.agentmesh360.com/ko/" />
+<link rel="alternate" hreflang="x-default" href="https://runtime.agentmesh360.com/" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://agentmesh360.com/#organization",
+      "name": "AgentMesh360",
+      "url": "https://agentmesh360.com/"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://runtime.agentmesh360.com/#software",
+      "name": "AgentMesh Runtime",
+      "url": "https://runtime.agentmesh360.com/ja/",
+      "inLanguage": "ja",
+      "codeRepository": "https://github.com/jiyangnan/AgentMesh-Runtime",
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "local AI agent runtime scaffolding",
+      "operatingSystem": "macOS, Windows, Linux",
+      "isAccessibleForFree": true,
+      "provider": { "@id": "https://agentmesh360.com/#organization" },
+      "description": "AgentMesh Runtime はオープンソースのローカル AI エージェント・ランタイム足場です。セッション横断の永続的なエピソード記憶、有界 OODA ループの記録、クラッシュ復旧——すべてユーザーのマシン上で動作します。",
+      "featureList": [
+        "セッション横断の永続的なエピソード記憶",
+        "マルチバックエンド・フェイルオーバー（Neo4j グラフ + SQLite FTS5 + ファイル grep + オプションの Gemini ベクトル）",
+        "有界 OODA ループ・ステートマシンの記録",
+        "クラッシュ／再起動からの rehydrate 復旧",
+        "doctor によるワンコマンド環境セルフチェック",
+        "Apache 2.0 オープンソース"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "JPY",
+        "availability": "https://schema.org/InStock"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://runtime.agentmesh360.com/ja/#faq",
+      "inLanguage": "ja",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "AgentMesh Runtime は LLM を内蔵していますか？",
+          "acceptedAnswer": { "@type": "Answer", "text": "いいえ。これは足場です。知能はすでに使っているエージェント（Claude Code / OpenClaw / Codex / Hermes / 自作）から来ます。この層は記憶・ループ記録・クラッシュ復旧という土台の作業を担当します。" }
+        },
+        {
+          "@type": "Question",
+          "name": "クラウドで動きますか？アカウントや API キーは必要ですか？",
+          "acceptedAnswer": { "@type": "Answer", "text": "両方とも不要です。すべてのデータはあなたのマシンに留まります。AgentMesh360 アカウントもクラウドサービスも API キーも要りません。Gemini ベクトル検索だけは任意で、あなた自身の GEMINI_API_KEY が必要です。" }
+        },
+        {
+          "@type": "Question",
+          "name": "OODA ループは私の代わりに判断してくれますか？",
+          "acceptedAnswer": { "@type": "Answer", "text": "いいえ。decide と verify ステップは意図的に小さく作ったステートマシンのスタブです——あなたが何をしたかを記録しますが、次の一手を考えてはくれません。本物の推論はあなたのエージェントから来ます。" }
+        },
+        {
+          "@type": "Question",
+          "name": "OpenClaw を使っていなくても利用できますか？",
+          "acceptedAnswer": { "@type": "Answer", "text": "はい。デフォルトのパスが歴史的に ~/.openclaw/* を指しているだけです。ARS_SESSION_BASE と ARS_MEMORY_DB をご自身のエージェントが使っているパスに設定すれば動きます。Claude Code / Codex / Hermes / 任意の自作エージェントから駆動できます。" }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Noto+Serif+JP:wght@400;500;600&family=Inter:wght@400;450;500;600&family=Noto+Sans+JP:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg:#FFF7F0; --surface:#FFFCF8; --ink:#1A1915; --ink-soft:#33423D;
+    --muted:#786F66; --rule:#E8DCCD; --accent:#0E8A6E; --accent-ink:#075B49;
+    --blue:#2E5BFF; --red:#FF2442; --yellow:#FFD400;
+    --code-bg:#0B2D27; --code-fg:#F5EFE5; --code-dim:#A7B7AE; --code-acc:#FFD400;
+    --serif:"Source Serif 4","Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+    --sans:"Inter","Noto Sans JP",-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --maxw:1120px; --gutter:clamp(20px,4vw,56px);
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0} html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:"ss01","cv11"}
+  ::selection{background:var(--accent);color:#fff}
+  a{color:inherit;text-decoration:none}
+  a.link{color:var(--ink);border-bottom:1px solid currentColor;padding-bottom:1px;transition:color .15s,border-color .15s}
+  a.link:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gutter)}
+
+  .nav{position:sticky;top:0;z-index:50;background:color-mix(in oklab,var(--bg) 85%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid transparent;transition:border-color .2s}
+  .nav.scrolled{border-bottom-color:var(--rule)}
+  .nav-inner{max-width:var(--maxw);margin:0 auto;padding:18px var(--gutter);display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:500;font-size:18px;letter-spacing:-0.005em}
+  .brand-mark{width:22px;height:22px;display:inline-block;flex:none;color:var(--accent)}
+  .brand small{font-family:var(--sans);font-weight:450;color:var(--muted);font-size:13px;letter-spacing:0}
+  .nav-links{display:flex;align-items:center;gap:32px;font-size:14px;color:var(--ink-soft)}
+  .nav-links a{transition:color .15s} .nav-links a:hover{color:var(--accent)}
+  .nav-cta{font-size:14px;background:var(--ink);color:var(--surface);padding:9px 16px;border-radius:999px;transition:background .15s,color .15s}
+  .nav-links .nav-cta:hover{background:var(--accent);color:var(--surface)}
+  .lang-switch{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:0.02em}
+  .lang-switch .lang{color:var(--muted);transition:color .15s;padding:2px 0}
+  .lang-switch .lang:hover{color:var(--accent)}
+  .lang-switch .lang.lang-active{color:var(--accent-ink);font-weight:500}
+  .lang-switch .sep{width:1px;height:11px;background:var(--rule);display:inline-block}
+  @media(max-width:720px){.nav-links a:not(.nav-cta):not(.lang){display:none} .lang-switch{gap:8px}}
+
+  .hero{padding:clamp(64px,11vw,140px) 0 clamp(48px,8vw,96px)}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in oklab,var(--accent) 20%,transparent)}
+  h1.display{font-family:var(--serif);font-weight:500;font-size:clamp(36px,4.8vw,60px);line-height:1.18;letter-spacing:-0.015em;margin:28px 0 0}
+  h1.display em{font-style:normal;color:var(--accent-ink);font-weight:600}
+  .lede{margin:28px 0 0;font-size:clamp(16px,1.4vw,18px);line-height:1.8;color:var(--ink-soft);max-width:62ch;text-wrap:pretty}
+  .hero-ctas{margin-top:36px;display:flex;flex-wrap:wrap;gap:12px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;font-size:14.5px;font-weight:500;border-radius:999px;transition:background .15s,color .15s,border-color .15s,transform .15s;border:1px solid transparent;cursor:pointer;font-family:inherit}
+  .btn-primary{background:var(--ink);color:var(--surface)} .btn-primary:hover{background:var(--accent);color:var(--surface)}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--rule)} .btn-ghost:hover{border-color:var(--ink)}
+  .btn .arrow{transition:transform .15s} .btn:hover .arrow{transform:translateX(3px)}
+
+  .terminal-frame{margin-top:64px;background:var(--code-bg);color:var(--code-fg);border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,0.04) inset,0 30px 60px -30px rgba(31,29,24,0.4),0 12px 24px -16px rgba(31,29,24,0.25)}
+  .terminal-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+  .terminal-bar .lights{display:flex;gap:6px}
+  .terminal-bar .lights span{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,0.1)}
+  .terminal-bar .title{font-family:var(--mono);font-size:12px;color:var(--code-dim);margin-left:8px}
+  pre.code{margin:0;padding:22px 24px 26px;font-family:var(--mono);font-size:13.5px;line-height:1.85;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  pre.code .c-prompt{color:var(--code-acc);user-select:none} pre.code .c-cmd{color:var(--code-fg)}
+  pre.code .c-flag{color:var(--blue)} pre.code .c-str{color:var(--yellow)} pre.code .c-dim{color:var(--code-dim)}
+
+  section.block{padding:clamp(72px,10vw,128px) 0;border-top:1px solid var(--rule)}
+  .kicker{font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:28px;display:flex;align-items:center;gap:12px}
+  .kicker::before{content:"";width:24px;height:1px;background:var(--muted);display:inline-block}
+  h2.section-title{font-family:var(--serif);font-weight:500;font-size:clamp(28px,3.8vw,46px);line-height:1.28;letter-spacing:-0.012em;margin:0;max-width:24ch;text-wrap:balance}
+  h2.section-title em{font-style:normal;color:var(--accent-ink);font-weight:600}
+  .section-lede{margin-top:22px;font-size:17px;line-height:1.8;color:var(--ink-soft);max-width:58ch}
+
+  .why{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,5vw,80px);align-items:start}
+  .why h2{max-width:18ch}
+  .why-body p{font-size:clamp(18px,1.8vw,22px);line-height:1.7;color:var(--ink);margin:0;font-family:var(--serif);font-weight:400;letter-spacing:-0.003em;text-wrap:pretty}
+  .why-body p + p{margin-top:18px} .why-body p .hi{color:var(--accent-ink);font-weight:500}
+  @media(max-width:820px){.why{grid-template-columns:1fr;gap:24px}}
+
+  .features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(28px,3.5vw,56px);margin-top:clamp(48px,6vw,80px)}
+  .feat-num{font-family:var(--serif);font-style:italic;font-weight:400;font-size:16px;color:var(--accent);margin-bottom:22px;display:inline-block}
+  .feat h3{font-family:var(--serif);font-weight:500;font-size:22px;line-height:1.4;letter-spacing:-0.005em;margin:0 0 14px;text-wrap:balance}
+  .feat p{margin:0;font-size:15px;line-height:1.75;color:var(--ink-soft);text-wrap:pretty}
+  @media(max-width:820px){.features{grid-template-columns:1fr}}
+
+  .agents{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(16px,2.5vw,24px);margin-top:clamp(48px,6vw,72px)}
+  @media(max-width:820px){.agents{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:480px){.agents{grid-template-columns:1fr}}
+  .ag{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:clamp(22px,2.6vw,28px);display:flex;flex-direction:column;gap:8px}
+  .ag .ag-tag{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.06em}
+  .ag h3{font-family:var(--serif);font-weight:500;font-size:18px;margin:0;letter-spacing:-0.005em}
+  .ag p{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.7}
+
+  .stack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,3vw,32px);margin-top:clamp(48px,6vw,72px)}
+  @media(max-width:680px){.stack{grid-template-columns:1fr}}
+  .stk{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:clamp(22px,2.6vw,30px)}
+  .stk .stk-icon{font-family:var(--mono);font-size:12px;color:var(--accent-ink);letter-spacing:0.04em;margin-bottom:14px}
+  .stk h3{font-family:var(--serif);font-weight:500;font-size:19px;margin:0 0 10px;letter-spacing:-0.005em}
+  .stk p{margin:0;font-size:14px;color:var(--ink-soft);line-height:1.75}
+  .stk code{font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em}
+
+  .steps{margin-top:clamp(48px,6vw,72px);display:grid;grid-template-columns:1fr;gap:0}
+  .step{display:grid;grid-template-columns:56px 1fr;gap:clamp(20px,3vw,48px);padding:32px 0;border-top:1px solid var(--rule);align-items:start}
+  .step:last-child{border-bottom:1px solid var(--rule)}
+  .step-n{font-family:var(--serif);font-weight:400;font-size:26px;color:var(--muted);line-height:1;font-feature-settings:"lnum";padding-top:4px}
+  .step-body{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(20px,4vw,64px);align-items:start}
+  @media(max-width:720px){.step-body{grid-template-columns:1fr;gap:12px}}
+  .step h3{font-family:var(--serif);font-weight:500;font-size:clamp(20px,2.2vw,26px);line-height:1.4;letter-spacing:-0.008em;margin:0;text-wrap:balance}
+  .step p{margin:0;color:var(--ink-soft);font-size:15.5px;line-height:1.8;text-wrap:pretty}
+  .step p code{font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em}
+
+  .faq-list{margin-top:clamp(40px,5vw,56px)}
+  .faq-item{border-top:1px solid var(--rule)}
+  .faq-list .faq-item:last-child{border-bottom:1px solid var(--rule)}
+  .faq-item summary{list-style:none;padding:26px 32px 26px 0;position:relative;font-family:var(--serif);font-weight:500;font-size:clamp(17px,1.5vw,20px);line-height:1.5;letter-spacing:-0.005em;color:var(--ink);transition:color .15s}
+  .faq-item summary::-webkit-details-marker{display:none}
+  .faq-item summary:hover{color:var(--accent)}
+  .faq-item summary::after{content:"";position:absolute;right:4px;top:50%;width:14px;height:14px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-65%) rotate(45deg);transition:transform .2s;opacity:.55}
+  .faq-item[open] summary::after{transform:translateY(-25%) rotate(-135deg)}
+  .faq-answer{padding:0 48px 28px 0;color:var(--ink-soft);font-size:15.5px;line-height:1.85;max-width:70ch;text-wrap:pretty}
+  .faq-answer code{font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.92em}
+
+  footer.foot{border-top:1px solid var(--rule);padding:56px 0 72px;font-size:14px;color:var(--muted)}
+  .foot-inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;align-items:flex-end}
+  .foot .brand{font-size:16px} .foot-meta{display:flex;flex-wrap:wrap;gap:24px} .foot-meta a:hover{color:var(--accent)}
+  .foot-note{margin-top:14px;font-size:12px;color:var(--muted);opacity:0.85}
+  .foot-note a{border-bottom:1px dotted currentColor} .foot-note a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+</style>
+</head>
+<body>
+
+<header class="nav" id="topnav">
+  <div class="nav-inner">
+    <a href="/ja/" class="brand" aria-label="AgentMesh Runtime">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M20 12a8 8 0 1 1-3.2-6.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M20 5v4h-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+      </svg>
+      AgentMesh Runtime <small>· AgentMesh360</small>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">機能</a>
+      <a href="#agents">対応エージェント</a>
+      <a href="#how">使い方</a>
+      <a href="#faq">FAQ</a>
+      <span class="lang-switch" aria-label="Language">
+        <a class="lang" href="/" hreflang="zh-CN">中</a>
+        <span class="sep"></span>
+        <a class="lang" href="/en/" hreflang="en">EN</a>
+        <span class="sep"></span>
+        <a class="lang lang-active" aria-current="page">日</a>
+        <span class="sep"></span>
+        <a class="lang" href="/ko/" hreflang="ko">한</a>
+      </span>
+      <a href="https://agentmesh360.com">AgentMesh360</a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="nav-cta">GitHub を見る</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow"><span class="dot"></span> OPEN SOURCE · 完全ローカル動作</div>
+    <h1 class="display">あなたの AI エージェントに<em>記憶</em>と<em>復旧</em>を。</h1>
+    <p class="lede">
+      AgentMesh Runtime は<strong>完全ローカル・オープンソース</strong>のエージェント・ランタイム足場です。セッション横断の永続的なエピソード記憶、有界 OODA ループの記録、クラッシュからの綺麗な再開——これらを下層で支えます。インストール後も、<strong>知能はあなたのエージェント</strong>（Claude Code / OpenClaw / Codex / Hermes / 自作）から来ます。この層は記憶・記録・復旧という土台の作業だけを担当します。アカウント不要、クラウド不要、無料、Apache 2.0。
+    </p>
+    <div class="hero-ctas">
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="btn btn-primary">GitHub を見る <span class="arrow">→</span></a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md" class="btn btn-ghost">AGENTS.md を読む</a>
+    </div>
+
+    <div class="terminal-frame" aria-label="ローカルにインストールしてエージェントに渡す">
+      <div class="terminal-bar">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <span class="title">~ run-this-locally</span>
+      </div>
+<pre class="code"><span class="c-prompt">$</span> <span class="c-cmd">git clone https://github.com/jiyangnan/AgentMesh-Runtime.git &amp;&amp; cd AgentMesh-Runtime</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv sync</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime doctor</span>           <span class="c-dim"># セルフチェック: Neo4j / SQLite / ledger / checkpoint</span>
+
+<span class="c-dim"># あとはエージェントに任せる（AGENTS.md 参照）:</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime memory recall </span><span class="c-str">"your query"</span><span class="c-cmd"> --top-k 5</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime memory ingest-file ./session.jsonl discord</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime rehydrate --write-default --print-path</span>  <span class="c-dim"># 再起動後の復旧</span></pre>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap why">
+    <div>
+      <div class="kicker">なぜこの層が必要か</div>
+      <h2 class="section-title">エージェントは賢い。<em>覚えない</em>のと、<em>落ちたら終わる</em>のが残念。</h2>
+    </div>
+    <div class="why-body">
+      <p>セッションが終わる、プロセスが再起動する、コンテキストが溢れる——<span class="hi">昨日の決定も、踏んだ落とし穴も、失敗した試行も、すべてゼロに戻ります</span>。</p>
+      <p>AgentMesh Runtime は記憶・ループ記録・断点復旧という土台の作業を引き受け、あなたのエージェントが日をまたいでも続けられるようにします。具体的な思考と判断は、引き続きあなたのエージェントの頭の中で。</p>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="features">
+  <div class="wrap">
+    <div class="kicker">足場の機能 · すべてローカル動作</div>
+    <h2 class="section-title">5 つの<em>誇張なし</em>の機能、すべてあなたのマシン上。</h2>
+    <p class="section-lede">誇張も絵空事もありません。下記はコードに実装されていて実際に動くものだけです。判断の知能は引き続きあなたのエージェントから。この層は土台だけを担当します。</p>
+    <div class="features">
+      <div class="feat">
+        <span class="feat-num">i.</span>
+        <h3>マルチバックエンドの永続エピソード記憶</h3>
+        <p>Neo4j グラフ検索、SQLite FTS5（BM25 + snippet）、生ファイル grep、オプションの Gemini ベクトル——4 層フェイルオーバーで、どれが落ちても他が引き継ぎます。セッションイベント・決定・教訓を回をまたいで呼び戻せます。</p>
+      </div>
+      <div class="feat">
+        <span class="feat-num">ii.</span>
+        <h3>有界 OODA ループの記録</h3>
+        <p>Observe / Orient / Decide / Act / Verify / Record のステートマシンで、各ステップを永続的なトレースに残します。<strong>本当の判断はエージェントから</strong>——足場はステップを確実に実行させ、過程を記録し、規律を保つだけです。</p>
+      </div>
+      <div class="feat">
+        <span class="feat-num">iii.</span>
+        <h3>クラッシュ／再起動からの復旧</h3>
+        <p>SQLite ↔ Neo4j の遅延同期 ledger、checkpoint ストレージ、ワンコマンドの <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">rehydrate</code>——再起動後すぐに「どこまで進んだか」を再構築し、新しいセッションに注入します。</p>
+      </div>
+      <div class="feat">
+        <span class="feat-num">iv.</span>
+        <h3>ワンコマンド・セルフチェック + アンチパターン検出</h3>
+        <p><code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">doctor</code> が JSON ヘルスレポートを出力。ルールベースの <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">blind_retry</code> / <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">phantom_progress</code> / <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">pivot_exhaustion</code> のアンチパターン警告——カウンタと閾値です、魔法ではありません。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="agents">
+  <div class="wrap">
+    <div class="kicker">誰が動かせるか</div>
+    <h2 class="section-title">足場はエージェントを選びません。</h2>
+    <p class="section-lede">特定ベンダーに縛られません。ローカル CLI または Python パッケージを呼べるエージェントや自作スクリプトなら、何でもこの層を駆動できます。</p>
+    <div class="agents">
+      <div class="ag"><span class="ag-tag">CLI / SKILL</span><h3>Claude Code</h3><p><code>agentmesh-runtime</code> をツールコマンドとして呼び出し。skill で自動ロード可能。</p></div>
+      <div class="ag"><span class="ag-tag">NATIVE HOST</span><h3>OpenClaw</h3><p>本プロジェクトの発祥地。デフォルトパスがそのまま OpenClaw のランタイムを指します。</p></div>
+      <div class="ag"><span class="ag-tag">CLI / MCP</span><h3>Codex</h3><p>シェル経由で CLI を呼ぶか、MCP ツールとしてラップ。Codex CLI と完全互換。</p></div>
+      <div class="ag"><span class="ag-tag">LOCAL AGENT</span><h3>Hermes / 自作</h3><p>Python サブプロセスを起動できるスクリプトなら何でも動きます。環境変数でパスを差し替えるだけ。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="stack">
+  <div class="wrap">
+    <div class="kicker">ローカル依存</div>
+    <h2 class="section-title">3 点セット、すべて<em>あなたのマシン</em>上で。</h2>
+    <p class="section-lede">クラウド worker もホスト型 DB も有料 API もありません。下記 3 つをインストールすれば、足場はローカルで動きます。Python 側は <code>uv sync</code> が処理、それ以外は手動。</p>
+    <div class="stack">
+      <div class="stk">
+        <div class="stk-icon">RUNTIME</div>
+        <h3>Python 3.10+ · uv</h3>
+        <p>パッケージ管理は <code>uv</code>。AgentMesh エコシステムと整合。<code>uv sync</code> 一発で依存をすべて入れます。</p>
+      </div>
+      <div class="stk">
+        <div class="stk-icon">GRAPH</div>
+        <h3>Neo4j（コミュニティ版、任意）</h3>
+        <p>グラフバックエンドは docker compose で：<code>docker compose -f docker/docker-compose.neo4j.yml up</code>。落ちても SQLite + ファイル grep が引き継ぎます。</p>
+      </div>
+      <div class="stk">
+        <div class="stk-icon">VECTOR</div>
+        <h3>Gemini Embedding（任意）</h3>
+        <p>セマンティック検索には自前の <code>GEMINI_API_KEY</code> が必要。設定しなくても他の機能はすべて動きます——ベクトルレーンが無くなるだけ。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="how">
+  <div class="wrap">
+    <div class="kicker">使い方</div>
+    <h2 class="section-title"><em>エージェントフレンドリー</em>に設計。</h2>
+    <p class="section-lede">このリポジトリ全体は、あなたが一行ずつ手で叩くのではなく、エージェントに呼ばせる前提です。あなたの仕事はインストールと「使い方を教えること」。残りはエージェントがやります。</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">01</div>
+        <div class="step-body">
+          <h3>CLI を入れる</h3>
+          <p><code>git clone</code> してから <code>uv sync</code>、<code>agentmesh-runtime</code> / <code>amr</code> コマンドが入ります。まず <code>doctor</code> を一度実行して環境が緑なことを確認。<br/><a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub を見る →</a></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">02</div>
+        <div class="step-body">
+          <h3>AGENTS.md をそのままエージェントに渡す</h3>
+          <p>リポジトリ直下の <code>AGENTS.md</code> はエージェント向けに書かれています——いつ <code>recall</code> するか、いつ <code>ingest</code> するか、いつ <code>rehydrate</code> するか、そして<strong>人間に何を約束してはいけないか</strong>。Claude Code / OpenClaw / Codex / Hermes にそのまま貼り付けるだけ。<br/><a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md">AGENTS.md を読む →</a></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">03</div>
+        <div class="step-body">
+          <h3>エージェントがローカルで動き、回を跨いで続く</h3>
+          <p>新しいタスクの前にエージェント自身が過去の決定を <code>recall</code>、タスク後に学びを <code>ingest</code>、再起動後に状態を <code>rehydrate</code>。あなたは出力だけ見ていればよく、土台に触れる必要はありません。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="faq">
+  <div class="wrap">
+    <div class="kicker">よくある質問</div>
+    <h2 class="section-title">FAQ.</h2>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>LLM を内蔵していますか？</summary>
+        <div class="faq-answer">いいえ。これは足場です。知能はすでに使っているエージェント（Claude Code / OpenClaw / Codex / Hermes / 自作）から来ます。この層は記憶・ループ記録・クラッシュ復旧という土台の作業を担当します。</div>
+      </details>
+      <details class="faq-item">
+        <summary>クラウドで動きますか？アカウントや API キーは必要？</summary>
+        <div class="faq-answer">両方とも不要です。すべてのデータはあなたのマシンに留まります。AgentMesh360 アカウントもクラウドサービスも API キーも要りません。Gemini ベクトル検索だけは任意で、自前の <code>GEMINI_API_KEY</code> が必要です。</div>
+      </details>
+      <details class="faq-item">
+        <summary>OODA ループは私の代わりに判断しますか？</summary>
+        <div class="faq-answer"><code>decide</code> と <code>verify</code> は意図的に小さく作ったステートマシンのスタブです——あなたが何をしたかを記録しますが、次の一手を考えてはくれません。本物の推論はエージェントから来ます。この層はステップを確実に実行させ、記録を残し、規律を保つだけです。</div>
+      </details>
+      <details class="faq-item">
+        <summary>OpenClaw を使っていなくても利用できますか？</summary>
+        <div class="faq-answer">はい。デフォルトのパスが歴史的に <code>~/.openclaw/*</code> を指しているだけです。<code>ARS_SESSION_BASE</code> と <code>ARS_MEMORY_DB</code> をご自身のエージェントが使っているパスに設定すれば動きます。Claude Code / Codex / Hermes / 任意の自作エージェントから駆動できます。</div>
+      </details>
+      <details class="faq-item">
+        <summary>「SQLite FTS」は本物の FTS5 ですか？それとも LIKE で済ませている？</summary>
+        <div class="faq-answer">本物の FTS5 です。BM25 ランキングと snippet ハイライト付き。これを正直に言うのは、プロジェクト自身の決定ログに「実は LIKE」と書かれた瞬間があり、後でコードを読み直したら <code>chunks_fts MATCH ?</code> という正規の FTS5 クエリだったと確認した——という記録があるからです。<a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/2026-06-18-claude-技术尽调与综合结论.md">決定ログの errata</a> に経緯が残っています。</div>
+      </details>
+      <details class="faq-item">
+        <summary>ベクトル層は O(n) のブルートフォース cosine ですか？</summary>
+        <div class="faq-answer">そのとおりです。個人 / 小規模チームの規模では十分。数百万ベクトルを超えるなら、外部に pgvector や faiss を組み合わせてください。分散ベクトル DB のフリはしません——売り文句は正直に。</div>
+      </details>
+      <details class="faq-item">
+        <summary>将来、ホスト型サーバーを出しますか？</summary>
+        <div class="faq-answer">今のところは出しません。実ユーザーから「Neo4j をホストしてほしい」と要望が出れば、<strong>DB だけをホスト</strong>する薄いサーバーを作る予定です——<strong>知能レイヤーは入れません</strong>。理由は <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/README.md">docs/decisions/</a> に。</div>
+      </details>
+      <details class="faq-item">
+        <summary>本当にオープンソース？</summary>
+        <div class="faq-answer">はい。Apache 2.0。コードはすべて <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a> にあります。自由に使い、改造し、issue を立ててください。</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <div>
+      <a href="/ja/" class="brand">
+        <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 12a8 8 0 1 1-3.2-6.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M20 5v4h-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
+        </svg>
+        AgentMesh Runtime
+      </a>
+      <div style="margin-top:8px;font-size:13.5px;color:var(--muted);">AgentMesh エコシステム（<a class="link" href="https://agentmesh360.com" style="font-size:inherit">agentmesh360.com</a>）のオープンソースプロジェクト · Apache 2.0</div>
+      <div class="foot-note">機械翻訳支援によるページです。フィードバックは <a href="https://github.com/jiyangnan/AgentMesh-Runtime/issues">GitHub issues</a> までどうぞ。</div>
+    </div>
+    <div class="foot-meta">
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md">AGENTS.md</a>
+      <a href="https://agentmesh360.com">AgentMesh360</a>
+      <span>© 2026</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    const nav = document.getElementById('topnav');
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  })();
+</script>
+
+</body>
+</html>

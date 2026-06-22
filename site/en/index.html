@@ -1,21 +1,22 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AgentMesh Runtime — 给你的 AI agent 加上记忆和恢复 · 开源本地脚手架</title>
-<meta name="description" content="AgentMesh Runtime 是 AgentMesh360 生态下的开源本地脚手架：给你的 AI agent（Claude Code / OpenClaw / Codex / Hermes）加上跨会话的持久记忆、有界 OODA 循环记录、崩溃后干净拾起的能力。完全本地运行、不需账户、Apache 2.0 开源。" />
-<meta property="og:title" content="AgentMesh Runtime — 给你的 AI agent 加上记忆和恢复" />
-<meta property="og:description" content="开源本地脚手架：跨会话的持久记忆、有界 OODA 循环、崩溃恢复，全程在你自己的机器上跑。智能由你的 agent 提供，脚手架由我们提供。" />
+<title>AgentMesh Runtime — Memory and recovery for your AI agent · open-source, local-first</title>
+<meta name="description" content="AgentMesh Runtime is an open-source, local-first runtime scaffolding library for AI agents (Claude Code, OpenClaw, Codex, Hermes, custom). Persistent memory across sessions, a bounded OODA loop recorder, and crash recovery — all on your own machine. Apache 2.0." />
+<meta property="og:title" content="AgentMesh Runtime — Memory and recovery for your AI agent" />
+<meta property="og:description" content="Open-source local scaffolding for your AI agent: persistent episodic memory, bounded OODA loop recording, crash recovery. Intelligence stays in your agent — we handle the dirty work underneath." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://runtime.agentmesh360.com/" />
+<meta property="og:url" content="https://runtime.agentmesh360.com/en/" />
 <meta property="og:site_name" content="AgentMesh Runtime · AgentMesh360" />
+<meta property="og:locale" content="en_US" />
 <meta name="robots" content="index,follow,max-image-preview:large" />
 <meta name="theme-color" content="#0E8A6E" />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="AgentMesh Runtime — 开源本地 agent 运行时脚手架" />
-<meta name="twitter:description" content="AgentMesh Runtime 给你的 AI agent 加上持久记忆、OODA 循环记录、崩溃恢复，本地运行、Apache 2.0。" />
-<link rel="canonical" href="https://runtime.agentmesh360.com/" />
+<meta name="twitter:title" content="AgentMesh Runtime — open-source local agent runtime scaffolding" />
+<meta name="twitter:description" content="Give your AI agent persistent memory, OODA loop recording, and crash recovery — all local, Apache 2.0." />
+<link rel="canonical" href="https://runtime.agentmesh360.com/en/" />
 <link rel="alternate" type="text/markdown" href="/llms.txt" title="AgentMesh Runtime LLMs.txt" />
 <link rel="alternate" hreflang="zh-CN" href="https://runtime.agentmesh360.com/" />
 <link rel="alternate" hreflang="en" href="https://runtime.agentmesh360.com/en/" />
@@ -38,7 +39,8 @@
       "@type": "SoftwareApplication",
       "@id": "https://runtime.agentmesh360.com/#software",
       "name": "AgentMesh Runtime",
-      "url": "https://runtime.agentmesh360.com/",
+      "url": "https://runtime.agentmesh360.com/en/",
+      "inLanguage": "en",
       "codeRepository": "https://github.com/jiyangnan/AgentMesh-Runtime",
       "license": "https://www.apache.org/licenses/LICENSE-2.0",
       "applicationCategory": "DeveloperApplication",
@@ -46,45 +48,46 @@
       "operatingSystem": "macOS, Windows, Linux",
       "isAccessibleForFree": true,
       "provider": { "@id": "https://agentmesh360.com/#organization" },
-      "description": "AgentMesh Runtime 是 AgentMesh360 生态下的开源本地 agent 运行时脚手架：跨会话的持久情景记忆、有界 OODA 循环记录、崩溃恢复，全部在本机跑。",
+      "description": "AgentMesh Runtime is an open-source local agent runtime scaffolding library: persistent episodic memory across sessions, bounded OODA loop recording, crash recovery — all on the user's machine.",
       "featureList": [
-        "跨会话持久情景记忆",
-        "多后端 failover（Neo4j 图 + SQLite FTS5 + 文件 grep + 可选 Gemini 向量）",
-        "有界 OODA 循环状态机记录",
-        "崩溃 / 重启 rehydrate 恢复",
-        "doctor 一键环境自检",
-        "Apache 2.0 开源"
+        "Persistent cross-session episodic memory",
+        "Multi-backend failover (Neo4j graph + SQLite FTS5 + file grep + optional Gemini vector)",
+        "Bounded OODA loop state-machine recording",
+        "Crash / restart rehydrate recovery",
+        "One-command doctor self-check",
+        "Apache 2.0 open source"
       ],
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "CNY",
+        "priceCurrency": "USD",
         "availability": "https://schema.org/InStock"
       }
     },
     {
       "@type": "FAQPage",
-      "@id": "https://runtime.agentmesh360.com/#faq",
+      "@id": "https://runtime.agentmesh360.com/en/#faq",
+      "inLanguage": "en",
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "AgentMesh Runtime 自己带 LLM 吗？",
-          "acceptedAnswer": { "@type": "Answer", "text": "不带。这是脚手架，智能由你已经在用的 agent（Claude Code / OpenClaw / Codex / Hermes / 自定义）提供。脚手架做的是记忆、循环记录、崩溃恢复这些底层事情。" }
+          "name": "Does AgentMesh Runtime bundle its own LLM?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. This is scaffolding. The intelligence comes from the agent you're already using (Claude Code / OpenClaw / Codex / Hermes / custom). What this layer does is memory, loop recording, and crash recovery — the plumbing underneath." }
         },
         {
           "@type": "Question",
-          "name": "AgentMesh Runtime 会上云吗？需要账户或 API key 吗？",
-          "acceptedAnswer": { "@type": "Answer", "text": "不会，也不需要。所有数据都在你自己的机器上，没有 AgentMesh360 账户、云服务或 key 要求。可选的 Gemini 向量召回需要你自己的 GEMINI_API_KEY。" }
+          "name": "Does it run in the cloud? Do I need an account or API key?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No on both. Everything stays on your machine. No AgentMesh360 account, no cloud service, no API key required. The optional Gemini vector recall needs your own GEMINI_API_KEY." }
         },
         {
           "@type": "Question",
-          "name": "AgentMesh Runtime 的 OODA 循环会替我决策吗？",
-          "acceptedAnswer": { "@type": "Answer", "text": "不会。decide 和 verify 步骤是有意做小的状态机存根——它们记录你做了什么，但不替你想下一步。真正的推理由你的 agent 出。" }
+          "name": "Will the OODA loop make decisions for me?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. The decide and verify steps are intentionally minimal state-machine stubs — they record what you did, they don't think for you. The real reasoning comes from your agent." }
         },
         {
           "@type": "Question",
-          "name": "我用的不是 OpenClaw，也能用吗？",
-          "acceptedAnswer": { "@type": "Answer", "text": "可以。默认路径还指向 ~/.openclaw/* 是历史原因，把 ARS_SESSION_BASE 和 ARS_MEMORY_DB 改成你自己 agent 的路径即可。Claude Code / Codex / Hermes / 任何自定义 agent 都能驱动。" }
+          "name": "I don't use OpenClaw. Can I still use this?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The default paths still point at ~/.openclaw/* for historical reasons — just set ARS_SESSION_BASE and ARS_MEMORY_DB to wherever your agent stores transcripts and memory. Claude Code / Codex / Hermes / any custom agent can drive it." }
         }
       ]
     }
@@ -94,7 +97,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Noto+Serif+SC:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
 <style>
   :root {
@@ -102,8 +105,8 @@
     --muted:#786F66; --rule:#E8DCCD; --accent:#0E8A6E; --accent-ink:#075B49;
     --blue:#2E5BFF; --red:#FF2442; --yellow:#FFD400;
     --code-bg:#0B2D27; --code-fg:#F5EFE5; --code-dim:#A7B7AE; --code-acc:#FFD400;
-    --serif:"Source Serif 4","Noto Serif SC","Songti SC","STSong",Georgia,serif;
-    --sans:"Inter",-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    --serif:"Source Serif 4",Georgia,serif;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
     --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     --maxw:1120px; --gutter:clamp(20px,4vw,56px);
   }
@@ -173,7 +176,6 @@
   .feat p{margin:0;font-size:15.5px;line-height:1.6;color:var(--ink-soft);text-wrap:pretty}
   @media(max-width:820px){.features{grid-template-columns:1fr}}
 
-  /* agents we plug into */
   .agents{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(16px,2.5vw,24px);margin-top:clamp(48px,6vw,72px)}
   @media(max-width:820px){.agents{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media(max-width:480px){.agents{grid-template-columns:1fr}}
@@ -182,7 +184,6 @@
   .ag h3{font-family:var(--serif);font-weight:500;font-size:18px;margin:0;letter-spacing:-0.005em}
   .ag p{margin:0;font-size:14px;color:var(--ink-soft);line-height:1.55}
 
-  /* local stack triplet */
   .stack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,3vw,32px);margin-top:clamp(48px,6vw,72px)}
   @media(max-width:680px){.stack{grid-template-columns:1fr}}
   .stk{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:clamp(22px,2.6vw,30px)}
@@ -215,13 +216,15 @@
   footer.foot{border-top:1px solid var(--rule);padding:56px 0 72px;font-size:14px;color:var(--muted)}
   .foot-inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;align-items:flex-end}
   .foot .brand{font-size:16px} .foot-meta{display:flex;flex-wrap:wrap;gap:24px} .foot-meta a:hover{color:var(--accent)}
+  .foot-note{margin-top:14px;font-size:12px;color:var(--muted);opacity:0.85;font-style:italic}
+  .foot-note a{border-bottom:1px dotted currentColor} .foot-note a:hover{color:var(--accent);border-bottom-color:var(--accent)}
 </style>
 </head>
 <body>
 
 <header class="nav" id="topnav">
   <div class="nav-inner">
-    <a href="#" class="brand" aria-label="AgentMesh Runtime">
+    <a href="/en/" class="brand" aria-label="AgentMesh Runtime">
       <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M20 12a8 8 0 1 1-3.2-6.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
         <path d="M20 5v4h-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -230,50 +233,50 @@
       AgentMesh Runtime <small>· AgentMesh360</small>
     </a>
     <nav class="nav-links" aria-label="Primary">
-      <a href="#features">能力</a>
-      <a href="#agents">支持的 agent</a>
-      <a href="#how">怎么用</a>
+      <a href="#features">Features</a>
+      <a href="#agents">Agents</a>
+      <a href="#how">How to use</a>
       <a href="#faq">FAQ</a>
       <span class="lang-switch" aria-label="Language">
-        <a class="lang lang-active" aria-current="page">中</a>
+        <a class="lang" href="/" hreflang="zh-CN">中</a>
         <span class="sep"></span>
-        <a class="lang" href="/en/" hreflang="en">EN</a>
+        <a class="lang lang-active" aria-current="page">EN</a>
         <span class="sep"></span>
         <a class="lang" href="/ja/" hreflang="ja">日</a>
         <span class="sep"></span>
         <a class="lang" href="/ko/" hreflang="ko">한</a>
       </span>
       <a href="https://agentmesh360.com">AgentMesh360</a>
-      <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="nav-cta">看 GitHub</a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="nav-cta">See on GitHub</a>
     </nav>
   </div>
 </header>
 
 <section class="hero">
   <div class="wrap">
-    <div class="eyebrow"><span class="dot"></span> OPEN SOURCE · 完全本地运行</div>
-    <h1 class="display">给你的 AI agent 加上<em>记忆</em>和<em>恢复</em>。</h1>
+    <div class="eyebrow"><span class="dot"></span> OPEN SOURCE · RUNS FULLY LOCAL</div>
+    <h1 class="display">Give your AI agent <em>memory</em> and <em>recovery</em>.</h1>
     <p class="lede">
-      AgentMesh Runtime 是一层<strong>完全本地、开源</strong>的 agent 运行时脚手架：跨会话的持久情景记忆、有界 OODA 循环记录、崩溃后干净拾起的能力。装好之后，<strong>智能仍然来自你的 agent</strong>（Claude Code / OpenClaw / Codex / Hermes / 自定义）——这层脚手架只在底下做记忆、记录、恢复这些脏活。不需账户、不上云、免费、Apache 2.0 开源。
+      AgentMesh Runtime is a <strong>fully local, open-source</strong> runtime scaffolding layer for your AI agent: persistent episodic memory across sessions, bounded OODA loop recording, and the ability to pick up cleanly after a crash. Once installed, <strong>the intelligence still comes from your agent</strong> (Claude Code / OpenClaw / Codex / Hermes / custom) — this layer just handles the dirty work underneath: remembering, recording, recovering. No account, no cloud, free, Apache 2.0.
     </p>
     <div class="hero-ctas">
-      <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="btn btn-primary">看 GitHub <span class="arrow">→</span></a>
-      <a href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md" class="btn btn-ghost">看 AGENTS.md</a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="btn btn-primary">See on GitHub <span class="arrow">→</span></a>
+      <a href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md" class="btn btn-ghost">Read AGENTS.md</a>
     </div>
 
-    <div class="terminal-frame" aria-label="在本地装好，交给你的 agent">
+    <div class="terminal-frame" aria-label="Install locally, then let your agent drive it">
       <div class="terminal-bar">
         <div class="lights"><span></span><span></span><span></span></div>
         <span class="title">~ run-this-locally</span>
       </div>
 <pre class="code"><span class="c-prompt">$</span> <span class="c-cmd">git clone https://github.com/jiyangnan/AgentMesh-Runtime.git &amp;&amp; cd AgentMesh-Runtime</span>
 <span class="c-prompt">$</span> <span class="c-cmd">uv sync</span>
-<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime doctor</span>           <span class="c-dim"># 自检：Neo4j / SQLite / ledger / checkpoint</span>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime doctor</span>           <span class="c-dim"># self-check: Neo4j / SQLite / ledger / checkpoint</span>
 
-<span class="c-dim"># 让你的 agent 调用（看 AGENTS.md）：</span>
+<span class="c-dim"># Now let your agent drive it (see AGENTS.md):</span>
 <span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime memory recall </span><span class="c-str">"your query"</span><span class="c-cmd"> --top-k 5</span>
 <span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime memory ingest-file ./session.jsonl discord</span>
-<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime rehydrate --write-default --print-path</span>  <span class="c-dim"># 重启后捡起</span></pre>
+<span class="c-prompt">$</span> <span class="c-cmd">uv run agentmesh-runtime rehydrate --write-default --print-path</span>  <span class="c-dim"># pick up after restart</span></pre>
     </div>
   </div>
 </section>
@@ -281,41 +284,41 @@
 <section class="block">
   <div class="wrap why">
     <div>
-      <div class="kicker">为什么需要这一层</div>
-      <h2 class="section-title">Agent 很聪明，可惜<em>记不住</em>，断了就<em>断了</em>。</h2>
+      <div class="kicker">Why this layer exists</div>
+      <h2 class="section-title">Agents are smart. Pity they <em>forget</em>, and a crash <em>ends</em> them.</h2>
     </div>
     <div class="why-body">
-      <p>会话一结束、进程一重启、上下文一爆，<span class="hi">昨天讨论过的决策、踩过的坑、失败过的尝试，全部归零</span>。</p>
-      <p>AgentMesh Runtime 把记忆、循环记录、断点恢复这层底层脏活做掉，让你的 agent 跨天跨次依然延续——而具体怎么想、怎么决定，仍然在它自己的脑子里。</p>
+      <p>Once the session ends, the process restarts, or the context window blows up — <span class="hi">yesterday's decisions, the pitfalls you walked into, the failed attempts</span> all go to zero.</p>
+      <p>AgentMesh Runtime handles the dirty work — memory, loop recording, restart recovery — so your agent can keep going day after day. How it actually thinks and decides stays in its own head.</p>
     </div>
   </div>
 </section>
 
 <section class="block" id="features">
   <div class="wrap">
-    <div class="kicker">脚手架能力 · 全在本地跑</div>
-    <h2 class="section-title">5 件 <em>诚实</em> 的事，全部跑在本机。</h2>
-    <p class="section-lede">不夸大，不画饼。下面列的是代码里真的实现了、能跑的能力。决策智能继续来自你的 agent，这层只做底下的事。</p>
+    <div class="kicker">What the scaffolding gives you · all local</div>
+    <h2 class="section-title">5 <em>honest</em> capabilities — all on your machine.</h2>
+    <p class="section-lede">No hand-waving. The list below is what the code actually does. Decision intelligence still comes from your agent; this layer just handles what's underneath.</p>
     <div class="features">
       <div class="feat">
         <span class="feat-num">i.</span>
-        <h3>多后端持久情景记忆</h3>
-        <p>Neo4j 图召回、SQLite FTS5（BM25 + snippet）、原始文件 grep、可选 Gemini 向量——四层 failover，任一后端挂了其余继续服务。会话事件、决策、教训都能跨次召回。</p>
+        <h3>Multi-backend episodic memory</h3>
+        <p>Neo4j graph recall, SQLite FTS5 (BM25 + snippet), raw file grep, and an optional Gemini vector backend — four layers of failover. If any backend dies, the others keep serving. Session events, decisions, and lessons learned all recall across runs.</p>
       </div>
       <div class="feat">
         <span class="feat-num">ii.</span>
-        <h3>有界 OODA 循环记录</h3>
-        <p>Observe / Orient / Decide / Act / Verify / Record 状态机，把每一步落到持久轨迹。<strong>真正的决策由 agent 给</strong>——脚手架只确保步骤被执行、过程被记录、不偏离纪律。</p>
+        <h3>Bounded OODA loop recording</h3>
+        <p>An Observe / Orient / Decide / Act / Verify / Record state machine that drops every step into a durable trace. <strong>Real decisions come from your agent</strong> — the scaffolding just ensures the steps happen, the process gets logged, and the discipline doesn't slip.</p>
       </div>
       <div class="feat">
         <span class="feat-num">iii.</span>
-        <h3>崩溃 / 重启恢复</h3>
-        <p>SQLite ↔ Neo4j 延迟同步账本、checkpoint 存储、<code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">rehydrate</code> 一键命令——重启后立刻重建"我刚才到哪了"，注入新会话开干。</p>
+        <h3>Crash and restart recovery</h3>
+        <p>A deferred sync ledger across SQLite ↔ Neo4j, a checkpoint store, and a one-shot <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">rehydrate</code> command — after a restart, immediately rebuild "where I was" and inject it into the new session.</p>
       </div>
       <div class="feat">
         <span class="feat-num">iv.</span>
-        <h3>一键自检 + 反模式检测</h3>
-        <p><code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">doctor</code> 给出 JSON 健康报告；规则式 <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">blind_retry</code> / <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">phantom_progress</code> / <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">pivot_exhaustion</code> 反模式提醒——是计数器加阈值，不是魔法。</p>
+        <h3>One-shot self-check + anti-pattern detector</h3>
+        <p><code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">doctor</code> emits a JSON health report; rule-based <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">blind_retry</code> / <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">phantom_progress</code> / <code style="font-family:var(--mono);background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink);padding:1px 6px;border-radius:4px;font-size:0.9em">pivot_exhaustion</code> anti-pattern alerts — counters and thresholds, not magic.</p>
       </div>
     </div>
   </div>
@@ -323,38 +326,38 @@
 
 <section class="block" id="agents">
   <div class="wrap">
-    <div class="kicker">谁能驱动</div>
-    <h2 class="section-title">脚手架不挑 agent。</h2>
-    <p class="section-lede">不绑死任何一家。任何能调用本地 CLI 或 Python 包的 agent / 自定义脚本，都能驱动这层脚手架。</p>
+    <div class="kicker">Who can drive it</div>
+    <h2 class="section-title">The scaffolding doesn't pick favorites.</h2>
+    <p class="section-lede">Not tied to any one vendor. Any agent or custom script that can invoke a local CLI or a Python package can drive this layer.</p>
     <div class="agents">
-      <div class="ag"><span class="ag-tag">CLI / SKILL</span><h3>Claude Code</h3><p>把 <code>agentmesh-runtime</code> 当工具命令调；可写 skill 自动加载。</p></div>
-      <div class="ag"><span class="ag-tag">原生宿主</span><h3>OpenClaw</h3><p>本产品的发源地，路径默认就指向 OpenClaw 的运行时目录。</p></div>
-      <div class="ag"><span class="ag-tag">CLI / MCP</span><h3>Codex</h3><p>通过 shell 调用 CLI 或包装成 MCP 工具；与 Codex CLI 完全兼容。</p></div>
-      <div class="ag"><span class="ag-tag">本地 agent</span><h3>Hermes / 自定义</h3><p>任何能跑 Python 子进程的脚本都能驱动；env 改路径就接好。</p></div>
+      <div class="ag"><span class="ag-tag">CLI / SKILL</span><h3>Claude Code</h3><p>Call <code>agentmesh-runtime</code> as a tool command; can ship a skill for auto-load.</p></div>
+      <div class="ag"><span class="ag-tag">NATIVE HOST</span><h3>OpenClaw</h3><p>This project's birthplace. Default paths already point at OpenClaw's runtime directories.</p></div>
+      <div class="ag"><span class="ag-tag">CLI / MCP</span><h3>Codex</h3><p>Invoke via shell or wrap as an MCP tool; fully compatible with the Codex CLI.</p></div>
+      <div class="ag"><span class="ag-tag">LOCAL AGENT</span><h3>Hermes / custom</h3><p>Any script that can spawn a Python subprocess can drive it; just point the env vars.</p></div>
     </div>
   </div>
 </section>
 
 <section class="block" id="stack">
   <div class="wrap">
-    <div class="kicker">本地依赖</div>
-    <h2 class="section-title">三件套，全在<em>你自己的机器</em>上。</h2>
-    <p class="section-lede">没有云端 worker、没有托管数据库、没有付费 API。装好这三样，脚手架就能在本机跑。<code>uv sync</code> 会处理 Python 这边；其余手动装。</p>
+    <div class="kicker">Local dependencies</div>
+    <h2 class="section-title">Three pieces — all on <em>your own machine</em>.</h2>
+    <p class="section-lede">No cloud workers, no hosted database, no paid API. Install these three and the scaffolding runs locally. <code>uv sync</code> handles the Python side; the rest you install yourself.</p>
     <div class="stack">
       <div class="stk">
         <div class="stk-icon">RUNTIME</div>
         <h3>Python 3.10+ · uv</h3>
-        <p>包管理用 <code>uv</code>，对齐 AgentMesh 生态。<code>uv sync</code> 一行装好所有依赖。</p>
+        <p>Packaging via <code>uv</code>, aligned with the AgentMesh ecosystem. One <code>uv sync</code> installs everything.</p>
       </div>
       <div class="stk">
         <div class="stk-icon">GRAPH</div>
-        <h3>Neo4j（社区版可选）</h3>
-        <p>图后端走 docker：<code>docker compose -f docker/docker-compose.neo4j.yml up</code>。挂了不影响——SQLite + 文件 grep 会接住。</p>
+        <h3>Neo4j (Community edition, optional)</h3>
+        <p>The graph backend ships as docker compose: <code>docker compose -f docker/docker-compose.neo4j.yml up</code>. If it dies, SQLite + file grep keep going.</p>
       </div>
       <div class="stk">
         <div class="stk-icon">VECTOR</div>
-        <h3>Gemini Embedding（可选）</h3>
-        <p>语义召回需要 <code>GEMINI_API_KEY</code>，你自己注册。不配也能跑——只是没向量这一路。</p>
+        <h3>Gemini Embedding (optional)</h3>
+        <p>Semantic recall needs a <code>GEMINI_API_KEY</code> you register yourself. Without one, everything else still works — you just lose the vector lane.</p>
       </div>
     </div>
   </div>
@@ -362,29 +365,29 @@
 
 <section class="block" id="how">
   <div class="wrap">
-    <div class="kicker">怎么用</div>
-    <h2 class="section-title">设计为 <em>agent-friendly</em>。</h2>
-    <p class="section-lede">整个仓库的设计是让 agent 调用，不是给你一行行手敲。你只负责装上 + 告诉 agent 怎么用，剩下的让它跑。</p>
+    <div class="kicker">How to use</div>
+    <h2 class="section-title">Designed to be <em>agent-friendly</em>.</h2>
+    <p class="section-lede">The whole repo is built to be invoked by an agent, not typed line-by-line by you. Your job: install it and tell the agent how to use it. The agent does the rest.</p>
     <div class="steps">
       <div class="step">
         <div class="step-n">01</div>
         <div class="step-body">
-          <h3>装上 CLI</h3>
-          <p><code>git clone</code> 仓库后 <code>uv sync</code>，得到 <code>agentmesh-runtime</code> / <code>amr</code> 命令；先跑一次 <code>doctor</code> 看环境是绿的。<br/><a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">看 GitHub →</a></p>
+          <h3>Install the CLI</h3>
+          <p><code>git clone</code> the repo, run <code>uv sync</code>, and you get <code>agentmesh-runtime</code> / <code>amr</code> commands. Run <code>doctor</code> once to confirm the environment is green.<br/><a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">See on GitHub →</a></p>
         </div>
       </div>
       <div class="step">
         <div class="step-n">02</div>
         <div class="step-body">
-          <h3>把 AGENTS.md 整段交给你的 agent</h3>
-          <p>仓库根目录的 <code>AGENTS.md</code> 是写给 agent 看的——什么时候 <code>recall</code>、什么时候 <code>ingest</code>、什么时候 <code>rehydrate</code>，以及<strong>什么话不能对人类许诺</strong>。整段贴给你的 Claude Code / OpenClaw / Codex / Hermes 就行。<br/><a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md">看 AGENTS.md →</a></p>
+          <h3>Hand AGENTS.md to your agent</h3>
+          <p>The <code>AGENTS.md</code> at the repo root is written for the agent itself — when to <code>recall</code>, when to <code>ingest</code>, when to <code>rehydrate</code>, and <strong>what NOT to promise the human</strong>. Paste it into your Claude Code / OpenClaw / Codex / Hermes and you're set.<br/><a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md">Read AGENTS.md →</a></p>
         </div>
       </div>
       <div class="step">
         <div class="step-n">03</div>
         <div class="step-body">
-          <h3>agent 在本机跑，跨次延续</h3>
-          <p>新任务前 agent 自己 <code>recall</code> 历史决策、任务后 <code>ingest</code> 沉淀经验、重启后 <code>rehydrate</code> 捡回状态。你这边只看输出，不必接触底层。</p>
+          <h3>Agent runs locally, continues across sessions</h3>
+          <p>Before each task the agent <code>recall</code>s prior decisions; after each task it <code>ingest</code>s what it learned; after a restart it <code>rehydrate</code>s its state. You see the output and never have to touch the plumbing.</p>
         </div>
       </div>
     </div>
@@ -393,40 +396,40 @@
 
 <section class="block" id="faq">
   <div class="wrap">
-    <div class="kicker">常见问题</div>
-    <h2 class="section-title">FAQ.</h2>
+    <div class="kicker">FAQ</div>
+    <h2 class="section-title">Straight answers.</h2>
     <div class="faq-list">
       <details class="faq-item">
-        <summary>它自己带 LLM 吗？</summary>
-        <div class="faq-answer">不带。这是脚手架，智能由你已经在用的 agent（Claude Code / OpenClaw / Codex / Hermes / 自定义）提供。脚手架做的是记忆、循环记录、崩溃恢复这些底层事情。</div>
+        <summary>Does it bundle its own LLM?</summary>
+        <div class="faq-answer">No. This is scaffolding. The intelligence comes from the agent you're already using (Claude Code / OpenClaw / Codex / Hermes / custom). What this layer does is memory, loop recording, and crash recovery — the plumbing underneath.</div>
       </details>
       <details class="faq-item">
-        <summary>它会上云吗？需要账户或 API key 吗？</summary>
-        <div class="faq-answer">不会，也不需要。所有数据都在你自己的机器上，没有 AgentMesh360 账户、云服务或 key 要求。可选的 Gemini 向量召回需要你自己的 <code>GEMINI_API_KEY</code>。</div>
+        <summary>Does it run in the cloud? Do I need an account or API key?</summary>
+        <div class="faq-answer">No on both. Everything stays on your machine. No AgentMesh360 account, no cloud service, no API key required. The optional Gemini vector recall needs your own <code>GEMINI_API_KEY</code>.</div>
       </details>
       <details class="faq-item">
-        <summary>OODA 循环会替我决策吗？</summary>
-        <div class="faq-answer"><code>decide</code> 和 <code>verify</code> 步骤是有意做小的状态机存根——它们记录你做了什么，但不替你想下一步。真正的推理由你的 agent 出，这层只确保步骤被走完、记录被写下、不偏离纪律。</div>
+        <summary>Will the OODA loop decide for me?</summary>
+        <div class="faq-answer"><code>decide</code> and <code>verify</code> are intentionally minimal state-machine stubs — they record what you did, they don't think for you. The real reasoning comes from your agent; this layer just ensures the steps happen, the records get written, and the discipline holds.</div>
       </details>
       <details class="faq-item">
-        <summary>我用的不是 OpenClaw，也能用吗？</summary>
-        <div class="faq-answer">可以。默认路径还指向 <code>~/.openclaw/*</code> 是历史原因，把 <code>ARS_SESSION_BASE</code> 和 <code>ARS_MEMORY_DB</code> 改成你自己 agent 的路径即可。Claude Code / Codex / Hermes / 任何自定义 agent 都能驱动。</div>
+        <summary>I don't use OpenClaw. Can I still use this?</summary>
+        <div class="faq-answer">Yes. The default paths still point at <code>~/.openclaw/*</code> for historical reasons — just set <code>ARS_SESSION_BASE</code> and <code>ARS_MEMORY_DB</code> to wherever your agent stores transcripts and memory. Claude Code / Codex / Hermes / any custom agent can drive it.</div>
       </details>
       <details class="faq-item">
-        <summary>"SQLite FTS" 真是 FTS5 吗？还是包了个 LIKE？</summary>
-        <div class="faq-answer">真 FTS5，带 BM25 排序和 snippet 高亮。这里写实诚——文档里有过一次错误指控说"实为 LIKE"，后来对照代码确认 <code>chunks_fts MATCH ?</code> 是正经的 FTS5 表查询，已经撤回（见 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/2026-06-18-claude-技术尽调与综合结论.md">决策文档的 errata</a>）。</div>
+        <summary>Is "SQLite FTS" really FTS5? Or a LIKE in disguise?</summary>
+        <div class="faq-answer">Real FTS5, with BM25 ranking and snippet highlighting. We say this honestly because there was actually a moment in the project's own decision log where someone claimed "it's really LIKE" — and then a closer read of the code confirmed <code>chunks_fts MATCH ?</code> is a proper FTS5 query. That mistake is documented in the <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/2026-06-18-claude-技术尽调与综合结论.md">decision-log errata</a>.</div>
       </details>
       <details class="faq-item">
-        <summary>向量层是 O(n) 暴力余弦吗？</summary>
-        <div class="faq-answer">是。个人 / 小团队规模够用，百万级以上向量请外置 pgvector 或 faiss。我们没有装作它是分布式向量库——卖点要诚实。</div>
+        <summary>Is the vector layer brute-force O(n) cosine?</summary>
+        <div class="faq-answer">Yes. Fine at personal / small-team scale. If you grow past a million vectors, swap in pgvector or faiss externally. We don't pretend it's a distributed vector database — selling points have to be honest.</div>
       </details>
       <details class="faq-item">
-        <summary>未来会做托管 server 吗？</summary>
-        <div class="faq-answer">暂时不做。如果将来有真实用户问"能帮我托管 Neo4j 吗"，会做一个<strong>只代管数据库</strong>的极薄 server——<strong>不是智能层</strong>。决策见 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/README.md">docs/decisions/</a>。</div>
+        <summary>Will there be a hosted server in the future?</summary>
+        <div class="faq-answer">Not for now. If real users start asking "can you host Neo4j for me", we'll build a <strong>database-only</strong> thin server — <strong>no intelligence layer</strong>. See the reasoning in <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/docs/decisions/README.md">docs/decisions/</a>.</div>
       </details>
       <details class="faq-item">
-        <summary>真的开源吗？</summary>
-        <div class="faq-answer">是。Apache 2.0，代码全在 <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a>，欢迎自取、改造、提 issue。</div>
+        <summary>Is it really open source?</summary>
+        <div class="faq-answer">Yes. Apache 2.0. All the code lives on <a class="link" href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a> — feel free to use it, fork it, send issues.</div>
       </details>
     </div>
   </div>
@@ -435,7 +438,7 @@
 <footer class="foot">
   <div class="wrap foot-inner">
     <div>
-      <a href="#" class="brand">
+      <a href="/en/" class="brand">
         <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M20 12a8 8 0 1 1-3.2-6.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
           <path d="M20 5v4h-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -443,7 +446,8 @@
         </svg>
         AgentMesh Runtime
       </a>
-      <div style="margin-top:8px;font-size:13.5px;color:var(--muted);">AgentMesh 生态（<a class="link" href="https://agentmesh360.com" style="font-size:inherit">agentmesh360.com</a>）下的开源项目 · Apache 2.0</div>
+      <div style="margin-top:8px;font-size:13.5px;color:var(--muted);">An open-source project in the AgentMesh ecosystem (<a class="link" href="https://agentmesh360.com" style="font-size:inherit">agentmesh360.com</a>) · Apache 2.0</div>
+      <div class="foot-note">Machine-assisted translation. Feedback welcome via <a href="https://github.com/jiyangnan/AgentMesh-Runtime/issues">GitHub issues</a>.</div>
     </div>
     <div class="foot-meta">
       <a href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a>
