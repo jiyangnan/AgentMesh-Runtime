@@ -1,0 +1,17 @@
+{
+  "goal_id": "ars-demo-001",
+  "loop_id": "0e5b5de6-9db9-40e8-9280-79af529acc18",
+  "title": "Demo autonomous loop",
+  "goal": "Demonstrate a bounded autonomous loop runtime.",
+  "status": "done",
+  "current_phase": "record",
+  "latest_decision": "reuse_or_compare_memory:episode:bb1154fa-2037-4869-a61b-f9e3b713f1c3",
+  "blockers": [],
+  "open_questions": [],
+  "next_step": "goal verified complete",
+  "next_iteration_hint": "goal verified complete",
+  "verification_result": "pass",
+  "needs_human_input": false,
+  "last_error": null,
+  "updated_at": "2026-06-22T02:50:18.985075+00:00"
+}
