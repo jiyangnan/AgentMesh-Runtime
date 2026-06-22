@@ -199,7 +199,7 @@ Failure mode:
 - if critical state is unknown, do not continue to act
 
 ### 8.2 Orient
-Purpose: interpret the observation using Module 1 (First-Principles Runtime).
+Purpose: interpret the observation. This is the step where the caller agent applies its own reasoning discipline — the runtime only enforces that the step happens and records what was produced.
 
 Required output:
 - explicit assumptions

@@ -1,41 +1,66 @@
 # Quickstart
 
-## 1. Start Neo4j
+## 1. Start Neo4j (optional but recommended)
 ```bash
-cd docker
-docker compose -f docker-compose.neo4j.yml up -d
+docker compose -f docker/docker-compose.neo4j.yml up -d
 ```
 
-## 2. Install deps
+## 2. Install
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 ```
 
-## 3. Configure env
+## 3. Configure (env)
+Defaults still point at `~/.openclaw/*` because that's where this code originally lived. If you don't run OpenClaw, set these:
 ```bash
 export ARS_NEO4J_URI=bolt://localhost:7687
 export ARS_NEO4J_USER=neo4j
 export ARS_NEO4J_PASSWORD=password
-export ARS_SESSION_BASE=~/.openclaw/agents
-export ARS_MEMORY_DB=~/.openclaw/memory/main.sqlite
+export ARS_SESSION_BASE=~/your-agent/agents      # where <agent>/sessions/*.jsonl live
+export ARS_MEMORY_DB=~/your-agent/main.sqlite
 export ARS_WORKSPACE=$PWD
+# optional:
+# export GEMINI_API_KEY=...                       # enables Gemini vector recall
 ```
 
-## 4. Ingest
+## 4. Self-check
 ```bash
-python3 src/episode_ingest.py ingest-file /path/to/session.jsonl discord
+uv run agentmesh-runtime doctor
+```
+A clean run prints a JSON report with `neo4j_port_7687: ok`, the SQLite table count, and ledger / checkpoint health.
+
+## 5. Ingest a transcript
+```bash
+uv run agentmesh-runtime memory ingest-file /path/to/session.jsonl discord
 ```
 
-## 5. Recall
+## 6. Recall
 ```bash
-python3 src/unified_memory_recall.py "First-Principles-Only"
-python3 src/unified_memory_recall.py "Hybrid-Vector-Graph neo4j ollama"
+uv run agentmesh-runtime memory recall "your query" --top-k 5
+
+# JSON output for programmatic use
+uv run agentmesh-runtime memory recall "your query" --top-k 5 --json
 ```
 
-## 6. Degradation tests
+## 7. Failover smoke-tests
+The recall layer should still produce results when a backend is down:
 ```bash
-python3 src/unified_memory_recall.py "query" --no-neo4j
-python3 src/unified_memory_recall.py "query" --no-neo4j --no-sqlite
+uv run agentmesh-runtime memory recall "query" --no-neo4j
+uv run agentmesh-runtime memory recall "query" --no-neo4j --no-sqlite
 ```
+
+## 8. Run the bundled OODA demo
+```bash
+uv run agentmesh-runtime demo
+```
+This drives `examples/goal_frame.example.json` through the loop. It converges in 1 iteration by design — for real work, write your own `goal_frame.json` (see [schemas/goal_frame.schema.json](../schemas/goal_frame.schema.json)).
+
+## 9. Recover after a restart
+```bash
+uv run agentmesh-runtime rehydrate --write-default --print-path
+```
+The printed file is the snapshot you can inject into your next session's bootstrap.
+
+---
+
+For an AI agent driving this CLI, start with [`AGENTS.md`](../AGENTS.md). For why the product looks like this (and what was deliberately not built), see [`docs/decisions/`](decisions/README.md).

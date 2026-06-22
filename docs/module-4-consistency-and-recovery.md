@@ -37,9 +37,9 @@ The design goal is therefore:
 ### New commands
 
 ```bash
-xng sync status
-xng sync backfill
-xng doctor
+agentmesh-runtime sync status
+agentmesh-runtime sync backfill
+agentmesh-runtime doctor
 ```
 
 ---
@@ -158,7 +158,7 @@ Replay a batch of pending entries.
 
 ## CLI output contracts
 
-### `xng sync status`
+### `agentmesh-runtime sync status`
 
 ```json
 {
@@ -170,13 +170,13 @@ Replay a batch of pending entries.
   "neo4j_success_entries": 12,
   "drift_detected": true,
   "backfill_needed": true,
-  "recommended_action": "xng sync backfill",
+  "recommended_action": "agentmesh-runtime sync backfill",
   "pending_sample": [...],
   "recent_failures": [...]
 }
 ```
 
-### `xng sync backfill`
+### `agentmesh-runtime sync backfill`
 
 ```json
 {
@@ -188,7 +188,7 @@ Replay a batch of pending entries.
 }
 ```
 
-### `xng doctor`
+### `agentmesh-runtime doctor`
 
 Adds:
 
@@ -219,8 +219,8 @@ After consistency is restored, recover task state on startup.
 ### Commands
 
 ```bash
-xng rehydrate
-xng bootstrap
+agentmesh-runtime rehydrate
+agentmesh-runtime bootstrap
 ```
 
 ### Checkpoint schema
@@ -258,8 +258,8 @@ xng bootstrap
 
 1. Neo4j can be offline while SQLite still accepts writes
 2. those writes produce pending ledger entries
-3. `xng sync status` exposes pending/drift clearly
-4. `xng sync backfill` replays pending entries after Neo4j recovery
+3. `agentmesh-runtime sync status` exposes pending/drift clearly
+4. `agentmesh-runtime sync backfill` replays pending entries after Neo4j recovery
 5. replayed entries become recallable through Neo4j-backed recall
 
 ### Startup integration path
@@ -268,15 +268,15 @@ Two startup-friendly outputs now exist:
 
 1. **JSON snapshot** for programmatic orchestration
    ```bash
-   xng rehydrate
-   xng rehydrate --write-default --print-path
+   agentmesh-runtime rehydrate
+   agentmesh-runtime rehydrate --write-default --print-path
    ```
    Standard file: `state/rehydrate-snapshot.json`
 
 2. **Bootstrap text** for direct session-context injection
    ```bash
-   xng bootstrap
-   xng bootstrap --stdout
+   agentmesh-runtime bootstrap
+   agentmesh-runtime bootstrap --stdout
    ```
    Standard file: `state/startup-context.txt`
 
@@ -284,9 +284,9 @@ Recommended startup flow:
 
 ```text
 process starts
--> xng sync status
--> if pending_backfill > 0 and Neo4j is ready: xng sync backfill
--> xng bootstrap
+-> agentmesh-runtime sync status
+-> if pending_backfill > 0 and Neo4j is ready: agentmesh-runtime sync backfill
+-> agentmesh-runtime bootstrap
 -> read state/startup-context.txt
 -> inject that bootstrap text into the new session startup context
 ```
@@ -294,7 +294,7 @@ process starts
 ### Phase 2
 
 1. loop/checkpoint state survives restart
-2. `xng rehydrate` restores current working state
+2. `agentmesh-runtime rehydrate` restores current working state
 3. startup bootstrap text can be generated for session injection
 4. restart recovery depends on checkpoint first, recall second
-5. `xng doctor` reports checkpoint health alongside sync health
+5. `agentmesh-runtime doctor` reports checkpoint health alongside sync health
