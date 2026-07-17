@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentmesh-runtime"
-version = "0.1.0"
+version = "0.1.1"
 description = "Open-source runtime scaffolding for AI agents — persistent memory, OODA loop recording, and rehydrate-on-restart, all local-first."
 readme = "README.md"
 requires-python = ">=3.10"

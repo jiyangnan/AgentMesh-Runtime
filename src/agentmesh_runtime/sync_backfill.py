@@ -2,19 +2,33 @@
 from __future__ import annotations
 
 import json
-import sqlite3
 import sys
 from typing import Any
 
-from .episode_ingest import MEMORY_DB, _clean_text, extract_entities, neo4j_write, TOPIC_KEYWORDS
-from .sync_state import append_ledger_event, neo4j_is_ready, pending_ledger_entries, sync_status_report
+from .episode_ingest import (
+    MEMORY_DB,
+    _clean_text,
+    extract_entities,
+    neo4j_write,
+    TOPIC_KEYWORDS,
+)
+from .sqlite_store import connect_memory_db
+from .sync_state import (
+    append_ledger_event,
+    neo4j_is_ready,
+    pending_ledger_entries,
+    sync_status_report,
+)
 
 
 def fetch_sqlite_event(session_id: str) -> dict[str, Any] | None:
-    conn = sqlite3.connect(MEMORY_DB)
+    conn = connect_memory_db(MEMORY_DB)
     cur = conn.cursor()
     try:
-        cur.execute("select path, source, text from chunks where path = ? limit 1", (f"episode:{session_id}",))
+        cur.execute(
+            "select path, source, text from chunks where path = ? limit 1",
+            (f"episode:{session_id}",),
+        )
         row = cur.fetchone()
         if not row:
             return None
@@ -35,31 +49,42 @@ def derive_topics(text: str) -> list[str]:
 def backfill_one(entry: dict[str, Any]) -> dict[str, Any]:
     retry_count = int(entry.get("retry_count", 0)) + 1
     if not neo4j_is_ready():
-        return append_ledger_event({
-            **entry,
-            "retry_count": retry_count,
-            "needs_backfill": True,
-            "neo4j_ok": False,
-            "last_error": "neo4j_not_ready",
-        })
+        return append_ledger_event(
+            {
+                **entry,
+                "retry_count": retry_count,
+                "needs_backfill": True,
+                "neo4j_ok": False,
+                "last_error": "neo4j_not_ready",
+            }
+        )
 
     session_id = entry.get("session_id")
     sqlite_row = fetch_sqlite_event(session_id)
     if not sqlite_row:
-        return append_ledger_event({
-            **entry,
-            "retry_count": retry_count,
-            "needs_backfill": True,
-            "neo4j_ok": False,
-            "last_error": "sqlite_source_missing",
-        })
+        return append_ledger_event(
+            {
+                **entry,
+                "retry_count": retry_count,
+                "needs_backfill": True,
+                "neo4j_ok": False,
+                "last_error": "sqlite_source_missing",
+            }
+        )
 
     full_text = _clean_text(sqlite_row.get("text", ""))
     summary = entry.get("summary") or full_text[:160]
     topics = entry.get("topics") or derive_topics(full_text)
-    entities = entry.get("entities") or extract_entities([
-        {"role": "assistant", "text": full_text, "timestamp": entry.get("first_ts") or entry.get("created_at")}
-    ], full_text)
+    entities = entry.get("entities") or extract_entities(
+        [
+            {
+                "role": "assistant",
+                "text": full_text,
+                "timestamp": entry.get("first_ts") or entry.get("created_at"),
+            }
+        ],
+        full_text,
+    )
     ok = neo4j_write(
         session_id=session_id,
         summary=summary,
@@ -72,24 +97,28 @@ def backfill_one(entry: dict[str, Any]) -> dict[str, Any]:
         msg_count=int(entry.get("msg_count") or 1),
     )
     if ok:
-        return append_ledger_event({
+        return append_ledger_event(
+            {
+                **entry,
+                "topics": topics,
+                "entities": entities,
+                "retry_count": retry_count,
+                "neo4j_ok": True,
+                "needs_backfill": False,
+                "last_error": None,
+            }
+        )
+    return append_ledger_event(
+        {
             **entry,
             "topics": topics,
             "entities": entities,
             "retry_count": retry_count,
-            "neo4j_ok": True,
-            "needs_backfill": False,
-            "last_error": None,
-        })
-    return append_ledger_event({
-        **entry,
-        "topics": topics,
-        "entities": entities,
-        "retry_count": retry_count,
-        "neo4j_ok": False,
-        "needs_backfill": True,
-        "last_error": "neo4j_backfill_failed",
-    })
+            "neo4j_ok": False,
+            "needs_backfill": True,
+            "last_error": "neo4j_backfill_failed",
+        }
+    )
 
 
 def run_backfill(limit: int | None = None) -> dict[str, Any]:

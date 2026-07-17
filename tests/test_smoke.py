@@ -9,7 +9,10 @@ These are intentionally tiny. They protect against three regressions:
 
 Anything that needs Neo4j / SQLite data / Gemini lives elsewhere.
 """
+
 from __future__ import annotations
+
+from pathlib import Path
 
 
 def test_package_imports() -> None:
@@ -30,10 +33,18 @@ def test_package_imports() -> None:
     )
 
     modules = [
-        autonomous_loop, checkpoint_store, cli, episode_ingest,
-        journal_to_episode, kb_to_graph, neo4j_recall,
-        startup_rehydrate, sync_backfill, sync_state,
-        unified_memory_recall, vector_store,
+        autonomous_loop,
+        checkpoint_store,
+        cli,
+        episode_ingest,
+        journal_to_episode,
+        kb_to_graph,
+        neo4j_recall,
+        startup_rehydrate,
+        sync_backfill,
+        sync_state,
+        unified_memory_recall,
+        vector_store,
     ]
     assert len(modules) == 12
 
@@ -59,6 +70,19 @@ def test_cli_main_callable() -> None:
     from agentmesh_runtime.cli import main
 
     assert callable(main)
+
+
+def test_checkout_version_matches_release() -> None:
+    from agentmesh_runtime import __version__
+
+    assert __version__ == "0.1.1"
+
+
+def test_bundled_demo_goal_is_packaged() -> None:
+    import agentmesh_runtime
+
+    data = Path(agentmesh_runtime.__file__).parent / "data" / "goal_frame.example.json"
+    assert data.is_file()
 
 
 def test_score_text_match_is_deterministic_and_positive() -> None:
