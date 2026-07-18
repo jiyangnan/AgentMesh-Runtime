@@ -78,3 +78,20 @@ def test_score_text_match_is_deterministic_and_positive() -> None:
     score = score_text_match(query, tokens, summary, text)
     assert score > 0
     assert score_text_match(query, tokens, summary, text) == score
+
+
+def test_localized_pages_use_the_runtime_product_mark_as_favicon() -> None:
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    favicon = (root / "site/favicon.svg").read_text()
+
+    assert "#2E5BCE" in favicon
+    assert "AgentMesh Runtime" in favicon
+    for relative in ("index.html", "en/index.html", "ja/index.html", "ko/index.html"):
+        page = (root / "site" / relative).read_text()
+        assert (
+            '<link rel="icon" type="image/svg+xml" '
+            'href="/favicon.svg?v=product-mark-v1" />'
+        ) in page
+        assert "data:image/svg+xml" not in page
