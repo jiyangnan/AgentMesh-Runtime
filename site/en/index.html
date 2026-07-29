@@ -150,6 +150,8 @@
   .btn-primary{background:var(--ink);color:var(--surface)} .btn-primary:hover{background:var(--accent);color:var(--surface)}
   .btn-ghost{background:transparent;color:var(--ink);border-color:var(--rule)} .btn-ghost:hover{border-color:var(--ink)}
   .btn .arrow{transition:transform .15s} .btn:hover .arrow{transform:translateX(3px)}
+  .pass-note{max-width:760px;margin:16px 0 0;color:var(--muted);font-size:13px;line-height:1.65}
+  .pass-note strong{color:var(--ink)}
 
   .terminal-frame{margin-top:64px;background:var(--code-bg);color:var(--code-fg);border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,0.04) inset,0 30px 60px -30px rgba(16,37,31,0.4),0 12px 24px -16px rgba(16,37,31,0.25)}
   .terminal-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
@@ -266,7 +268,9 @@
     <div class="hero-ctas">
       <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="btn btn-primary">See on GitHub <span class="arrow">→</span></a>
       <a href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md" class="btn btn-ghost">Read AGENTS.md</a>
+      <a href="https://agentmesh360.com/app/#pricing" class="btn btn-ghost" data-purchase-cta>Get an AgentMesh360 pass</a>
     </div>
+    <p class="pass-note"><strong>Runtime stays free, local, and account-free.</strong> This pass is for AgentMesh360 cloud products such as Lecturecast and CreatorCut.</p>
 
     <div class="terminal-frame" aria-label="Install locally, then let your agent drive it">
       <div class="terminal-bar">
