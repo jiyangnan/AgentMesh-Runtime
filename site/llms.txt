@@ -30,6 +30,11 @@ Non-Chinese pages are machine-assisted translations; the Chinese page is authori
 - License: Apache 2.0.
 - Source code: https://github.com/jiyangnan/AgentMesh-Runtime
 
+## Further Reading
+
+- Persistent memory for AI agents: https://runtime.agentmesh360.com/guides/ai-agent-memory/
+- Crash and restart recovery for AI agents: https://runtime.agentmesh360.com/guides/agent-crash-recovery/
+
 ## Best Short Description
 
 AgentMesh Runtime is an Apache 2.0 open-source local library that gives any AI agent persistent memory, an OODA-loop scaffold, and crash-recovery — without bringing its own LLM or cloud service.

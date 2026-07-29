@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Agent 持久记忆：如何跨会话保存决策、经验与上下文</title>
+  <meta name="description" content="AI Agent 持久记忆实用指南：比较会话上下文、长期记忆、关键词检索、实体与可选向量召回，并了解 AgentMesh Runtime 的本地记忆架构。" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="https://runtime.agentmesh360.com/guides/ai-agent-memory/" />
+  <meta property="og:title" content="AI Agent 持久记忆：跨会话记住真正有用的内容" />
+  <meta property="og:description" content="记忆不是把所有聊天记录塞回上下文，而是把决策、证据、失败和恢复位置变成可检索的长期状态。" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://runtime.agentmesh360.com/guides/ai-agent-memory/" />
+  <meta property="og:image" content="https://agentmesh360.com/agentmesh360-icon.png?v=transparent-2" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/seo.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {"@type": "Article", "headline": "AI Agent 持久记忆：如何跨会话保存决策、经验与上下文", "datePublished": "2026-07-30", "dateModified": "2026-07-30", "inLanguage": "zh-CN", "author": {"@type": "Organization", "name": "AgentMesh360", "url": "https://agentmesh360.com/"}},
+      {"@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "AgentMesh Runtime", "item": "https://runtime.agentmesh360.com/"},
+        {"@type": "ListItem", "position": 2, "name": "AI Agent 持久记忆", "item": "https://runtime.agentmesh360.com/guides/ai-agent-memory/"}
+      ]},
+      {"@type": "FAQPage", "mainEntity": [
+        {"@type": "Question", "name": "AgentMesh Runtime 是否自带大模型？", "acceptedAnswer": {"@type": "Answer", "text": "不带。它是本地记忆、工作循环记录和恢复脚手架，真正的推理由 Claude Code、OpenClaw、Codex、Hermes 或自定义 Agent 提供。"}},
+        {"@type": "Question", "name": "它的记忆召回是否全部是语义搜索？", "acceptedAnswer": {"@type": "Answer", "text": "不是。默认组合 Neo4j、SQLite FTS5 和文件检索；设置用户自己的 Gemini API Key 后可增加向量召回，但仍不是学习型重排序器。"}},
+        {"@type": "Question", "name": "记忆数据会上传到 AgentMesh360 云端吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。Runtime 完全在用户机器上运行，不需要 AgentMesh360 账户或 API Key。"}}
+      ]}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-nav"><div class="container nav-inner"><a class="brand" href="/">AgentMesh Runtime</a><nav class="nav-links" aria-label="页面导航"><a href="/guides/agent-crash-recovery/">崩溃恢复</a><a href="https://agentmesh360.com/guides/local-first-ai/">本地优先</a><a href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a></nav></div></header>
+  <main>
+    <section class="hero"><div class="container"><p class="eyebrow">AI Agent Memory Guide</p><h1>真正的持久记忆，不是把昨天的聊天全部再贴一遍。</h1><p class="lead">Agent 需要在新会话开始时找到与当前任务相关的决策、证据、失败路径和约束。记得太少会重复踩坑，记得太多又会把上下文塞满噪声。</p><div class="hero-actions"><a class="button primary" href="/">查看 Runtime</a><a class="button" href="#architecture">看记忆架构</a></div></div></section>
+    <article class="container article">
+      <nav class="toc" aria-label="本页目录"><strong>本页内容</strong><a href="#what">该记什么</a><a href="#architecture">召回架构</a><a href="#workflow">使用流程</a><a href="#faq">常见问题</a></nav>
+      <section id="what">
+        <h2>Agent 的长期记忆应该保存什么</h2>
+        <div class="grid">
+          <article class="card"><h3>决策与理由</h3><p>最终选了什么方案、为什么放弃其他方案、哪些约束来自用户或生产环境。只有结论没有理由，下一次很难判断条件是否已经变化。</p></article>
+          <article class="card"><h3>失败与修复</h3><p>尝试过的命令、错误原因、有效修复和仍未解决的风险。记录失败能避免新会话重复执行同一条无效路径。</p></article>
+          <article class="card"><h3>外部状态引用</h3><p>仓库、提交、版本、工单和证据文件的位置。记忆应指向可核对事实，而不是用一段摘要替代真实状态源。</p></article>
+          <article class="card"><h3>恢复位置</h3><p>任务进行到哪一步、哪些动作已经执行、下一步需要什么条件。它让崩溃恢复比“重新读完整聊天”更准确。</p></article>
+        </div>
+        <div class="callout"><strong>不该永久保存的内容也很重要。</strong>密钥、Cookie、真实联系人、客户资料和原始个人文件不应因为“方便记忆”进入长期日志。</div>
+      </section>
+      <section id="architecture">
+        <h2>AgentMesh Runtime 的多层召回</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>层</th><th>作用</th><th>优势</th><th>限制</th></tr></thead>
+            <tbody>
+              <tr><td>Neo4j 图召回</td><td>按实体与关系找到相关事件</td><td>适合项目、产品、人物和决策之间的连接</td><td>需要本地 Neo4j；不可用时自动降级</td></tr>
+              <tr><td>SQLite FTS5</td><td>BM25 关键词排序与 snippet</td><td>本地、快速、结果可解释</td><td>词汇不重合时召回有限</td></tr>
+              <tr><td>文件 grep</td><td>直接搜索原始日志与文本</td><td>依赖少，适合作为最后回退</td><td>排序和语义能力有限</td></tr>
+              <tr><td>可选 Gemini 向量</td><td>按嵌入相似度补充召回</td><td>能找到措辞不同但语义相关的内容</td><td>需要用户自己的 Key，当前是 O(n) 余弦，不是学习型重排</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>任一后端不可用时，其他层仍可继续服务。Runtime 的目标不是承诺“完美记忆”，而是在个人与小团队规模提供可理解、可降级的召回路径。</p>
+      </section>
+      <section id="workflow">
+        <h2>一套简单、可持续的使用方式</h2>
+        <ol class="checklist">
+          <li><strong>复杂任务开始前：</strong>运行 <code>agentmesh-runtime memory recall "任务主题" --top-k 5</code>，先读历史决策与失败。</li>
+          <li><strong>工作过程中：</strong>把关键观察、决定、动作和验证写入有界记录，而不是等结束后凭记忆补日志。</li>
+          <li><strong>任务结束后：</strong>用 <code>memory ingest-file</code> 导入经过清理的会话记录。</li>
+          <li><strong>新会话或重启后：</strong>用 <code>rehydrate</code> 组合检查点、近期记忆与仓库状态。</li>
+          <li><strong>结果异常时：</strong>先运行 <code>doctor</code>，确认 Neo4j、SQLite、同步账本和检查点是否健康。</li>
+        </ol>
+        <p>如果你最关心中断后如何继续，请阅读 <a href="/guides/agent-crash-recovery/">AI Agent 崩溃恢复指南</a>。</p>
+      </section>
+      <section id="faq" class="faq">
+        <h2>常见问题</h2>
+        <details><summary>Runtime 是否自带大模型？</summary><p>不带。它是记忆、工作循环记录和恢复脚手架，真正推理由你正在使用的 Agent 提供。</p></details>
+        <details><summary>召回是否全部是语义搜索？</summary><p>不是。默认组合 Neo4j、SQLite FTS5 和文件检索；可选向量召回需要用户自己的 Gemini Key。</p></details>
+        <details><summary>记忆数据会上传吗？</summary><p>不会。Runtime 完全在用户机器上运行，不需要 AgentMesh360 账户或 API Key。</p></details>
+      </section>
+      <section><div class="related"><h2>给你正在使用的 Agent 增加长期记忆</h2><p>查看 <a href="/">AgentMesh Runtime 产品页</a>的安装命令、AGENTS.md 和能力边界。</p></div></section>
+    </article>
+  </main>
+  <footer class="site-footer"><div class="container footer-inner"><span>AgentMesh Runtime · Local memory and recovery scaffolding</span><div class="footer-links"><a href="/">产品首页</a><a href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a><a href="https://agentmesh360.com/">AgentMesh360</a></div></div></footer>
+</body>
+</html>

@@ -30,3 +30,22 @@ def test_pass_copy_preserves_the_local_free_runtime_boundary() -> None:
     for relative, expected in zip(PAGES, localized_boundary_copy, strict=True):
         page = (ROOT / "site" / relative).read_text(encoding="utf-8")
         assert expected in page
+
+
+def test_runtime_site_links_and_indexes_memory_and_recovery_guides() -> None:
+    routes = (
+        "/guides/ai-agent-memory/",
+        "/guides/agent-crash-recovery/",
+    )
+    landing = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    sitemap = (ROOT / "site" / "sitemap.xml").read_text(encoding="utf-8")
+
+    for route in routes:
+        source = (
+            ROOT / "site" / route.strip("/") / "index.html"
+        ).read_text(encoding="utf-8")
+        canonical = f"https://runtime.agentmesh360.com{route}"
+        assert f'href="{route}"' in landing
+        assert f'rel="canonical" href="{canonical}"' in source
+        assert 'type="application/ld+json"' in source
+        assert f"<loc>{canonical}</loc>" in sitemap
