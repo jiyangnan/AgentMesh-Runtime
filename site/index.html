@@ -10,11 +10,13 @@
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://runtime.agentmesh360.com/" />
 <meta property="og:site_name" content="AgentMesh Runtime · AgentMesh360" />
+<meta property="og:image" content="https://agentmesh360.com/agentmesh360-icon.png" />
 <meta name="robots" content="index,follow,max-image-preview:large" />
 <meta name="theme-color" content="#087A62" />
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:title" content="AgentMesh Runtime — 开源本地 agent 运行时脚手架" />
 <meta name="twitter:description" content="AgentMesh Runtime 给你的 AI agent 加上持久记忆、OODA 循环记录、崩溃恢复，本地运行、Apache 2.0。" />
+<meta name="twitter:image" content="https://agentmesh360.com/agentmesh360-icon.png" />
 <link rel="canonical" href="https://runtime.agentmesh360.com/" />
 <link rel="alternate" type="text/markdown" href="/llms.txt" title="AgentMesh Runtime LLMs.txt" />
 <link rel="alternate" hreflang="zh-CN" href="https://runtime.agentmesh360.com/" />
@@ -412,6 +414,28 @@
           <p>新任务前 agent 自己 <code>recall</code> 历史决策、任务后 <code>ingest</code> 沉淀经验、重启后 <code>rehydrate</code> 捡回状态。你这边只看输出，不必接触底层。</p>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="guides">
+  <div class="wrap">
+    <div class="kicker">运行时指南</div>
+    <h2 class="section-title">让 Agent 跨会话延续，也要保留<em>可核验的边界</em>。</h2>
+    <p class="section-lede">从持久记忆和崩溃恢复两个高频问题出发，理解 Runtime 做什么、何时降级，以及它不会替调用方完成什么。</p>
+    <div class="stack">
+      <article class="stk">
+        <div class="stk-icon">MEMORY</div>
+        <h3>AI Agent 如何实现持久记忆</h3>
+        <p>对比图、全文、文件与可选向量召回，理解“找回历史”与“证明当前事实”的区别。</p>
+        <a class="link" href="/guides/ai-agent-memory/">阅读记忆指南 →</a>
+      </article>
+      <article class="stk">
+        <div class="stk-icon">RECOVERY</div>
+        <h3>Agent 崩溃后如何恢复任务</h3>
+        <p>了解 checkpoint、deferred sync ledger 与 rehydrate 如何帮助调用方从中断处安全继续。</p>
+        <a class="link" href="/guides/agent-crash-recovery/">阅读恢复指南 →</a>
+      </article>
     </div>
   </div>
 </section>
