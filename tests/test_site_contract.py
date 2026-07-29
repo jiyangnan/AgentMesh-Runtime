@@ -11,6 +11,12 @@ def test_localized_sites_offer_an_optional_agentmesh360_pass() -> None:
         page = (ROOT / "site" / relative).read_text(encoding="utf-8")
         assert PRICING_URL in page
         assert "data-purchase-cta" in page
+        assert 'class="btn btn-primary" data-purchase-cta' in page
+        assert (
+            'href="https://github.com/jiyangnan/AgentMesh-Runtime" '
+            'class="btn btn-ghost"'
+        ) in page
+        assert ".nav-cta{font-size:14px;background:transparent" in page
         assert "pass-note" in page
 
 
