@@ -46,6 +46,10 @@
       "operatingSystem": "macOS, Windows, Linux",
       "isAccessibleForFree": true,
       "provider": { "@id": "https://agentmesh360.com/#organization" },
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "需要跨会话记忆、过程记录和崩溃恢复的 AI Agent 开发者与高级用户"
+      },
       "description": "AgentMesh Runtime 是 AgentMesh360 生态下的开源本地 agent 运行时脚手架：跨会话的持久情景记忆、有界 OODA 循环记录、崩溃恢复，全部在本机跑。",
       "featureList": [
         "跨会话持久情景记忆",
@@ -63,6 +67,14 @@
       }
     },
     {
+      "@type": "WebSite",
+      "@id": "https://runtime.agentmesh360.com/#website",
+      "url": "https://runtime.agentmesh360.com/",
+      "name": "AgentMesh Runtime",
+      "inLanguage": "zh-CN",
+      "publisher": { "@id": "https://agentmesh360.com/#organization" }
+    },
+    {
       "@type": "FAQPage",
       "@id": "https://runtime.agentmesh360.com/#faq",
       "mainEntity": [
@@ -70,6 +82,11 @@
           "@type": "Question",
           "name": "AgentMesh Runtime 自己带 LLM 吗？",
           "acceptedAnswer": { "@type": "Answer", "text": "不带。这是脚手架，智能由你已经在用的 agent（Claude Code / OpenClaw / Codex / Hermes / 自定义）提供。脚手架做的是记忆、循环记录、崩溃恢复这些底层事情。" }
+        },
+        {
+          "@type": "Question",
+          "name": "AgentMesh Runtime 适合谁？",
+          "acceptedAnswer": { "@type": "Answer", "text": "适合需要让 Claude Code、OpenClaw、Codex、Hermes 或自定义 AI Agent 跨会话记住历史、记录有界工作循环，并在崩溃或重启后恢复上下文的开发者与高级用户。" }
         },
         {
           "@type": "Question",
@@ -407,6 +424,10 @@
       <details class="faq-item">
         <summary>它自己带 LLM 吗？</summary>
         <div class="faq-answer">不带。这是脚手架，智能由你已经在用的 agent（Claude Code / OpenClaw / Codex / Hermes / 自定义）提供。脚手架做的是记忆、循环记录、崩溃恢复这些底层事情。</div>
+      </details>
+      <details class="faq-item">
+        <summary>AgentMesh Runtime 适合谁？</summary>
+        <div class="faq-answer">适合需要让 Claude Code、OpenClaw、Codex、Hermes 或自定义 AI Agent <strong>跨会话记住历史、记录有界工作循环，并在崩溃或重启后恢复上下文</strong>的开发者与高级用户。它不是托管模型，也不会替 Agent 做推理。</div>
       </details>
       <details class="faq-item">
         <summary>它会上云吗？需要账户或 API key 吗？</summary>
