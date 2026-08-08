@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/agent-reinforcement-system/goal_frame.schema.json",
+  "$id": "https://raw.githubusercontent.com/jiyangnan/AgentMesh-Runtime/main/schemas/goal_frame.schema.json",
   "title": "GoalFrame",
   "type": "object",
   "required": [

@@ -11,12 +11,17 @@ Usage:
     python3 neo4j-recall.py "agent runtime memory" --json
 """
 
-import sys, json, re
+import json
+import re
+
 from neo4j import GraphDatabase
 
-URI = "bolt://localhost:7687"
-USER = "neo4j"
-PASSWORD = "password"
+from .config import neo4j_password, neo4j_uri, neo4j_user
+
+
+URI = neo4j_uri()
+USER = neo4j_user()
+PASSWORD = neo4j_password()
 
 
 def neo4j_recall(query: str, top_k: int = 5, verbose: bool = False) -> list[dict]:
@@ -24,17 +29,21 @@ def neo4j_recall(query: str, top_k: int = 5, verbose: bool = False) -> list[dict
     Search episodes using keyword + CONTAINS across summary and full_text.
     Returns list of dicts with session_id, summary, topics, timestamps.
     """
-    driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
-
-    # Build CONTAINS clauses for each token
-    tokens = re.findall(r'[\w]+', query.lower())
-    contains_clauses = " OR ".join(
-        f"(e.summary CONTAINS '{t}' OR e.full_text CONTAINS '{t}')" for t in tokens
-    )
+    tokens = re.findall(r"[\w]+", query.lower())
+    if not tokens:
+        return []
+    clauses = []
+    params = {"limit": max(1, min(int(top_k), 100))}
+    for index, token in enumerate(tokens):
+        params[f"token{index}"] = token
+        clauses.append(
+            f"(toLower(coalesce(e.summary, '')) CONTAINS $token{index} "
+            f"OR toLower(coalesce(e.full_text, '')) CONTAINS $token{index})"
+        )
 
     cypher = f"""
         MATCH (e:Episode)
-        WHERE {contains_clauses}
+        WHERE {" OR ".join(clauses)}
         RETURN e.session_id as session_id,
                e.summary as summary,
                e.topics as topics,
@@ -44,27 +53,34 @@ def neo4j_recall(query: str, top_k: int = 5, verbose: bool = False) -> list[dict
                e.channel as channel,
                e.full_text as full_text
         ORDER BY e.first_timestamp DESC
-        LIMIT {top_k}
+        LIMIT $limit
     """
 
     results = []
-    with driver.session() as s:
-        for record in s.run(cypher):
-            full_text = record["full_text"] or ""
-            # Extract relevant snippet around matches
-            snippet = _extract_snippet(full_text, tokens)
-            results.append({
-                "session_id": record["session_id"],
-                "summary": record["summary"],
-                "topics": record["topics"] or [],
-                "first_ts": record["first_ts"],
-                "last_ts": record["last_ts"],
-                "msg_count": record["msg_count"],
-                "channel": record["channel"] or "unknown",
-                "snippet": snippet,
-            })
-
-    driver.close()
+    driver = None
+    try:
+        driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
+        with driver.session() as session:
+            for record in session.run(cypher, **params):
+                full_text = record["full_text"] or ""
+                snippet = _extract_snippet(full_text, tokens)
+                results.append(
+                    {
+                        "session_id": record["session_id"],
+                        "summary": record["summary"],
+                        "topics": record["topics"] or [],
+                        "first_ts": record["first_ts"],
+                        "last_ts": record["last_ts"],
+                        "msg_count": record["msg_count"],
+                        "channel": record["channel"] or "unknown",
+                        "snippet": snippet,
+                    }
+                )
+    except Exception:
+        return []
+    finally:
+        if driver is not None:
+            driver.close()
     return results
 
 
@@ -80,7 +96,7 @@ def _extract_snippet(text: str, tokens: list[str], context_chars: int = 150) -> 
             prefix = "..." if start > 0 else ""
             suffix = "..." if end < len(text) else ""
             return f"{prefix}{snippet}{suffix}"
-    return text[:context_chars * 2].replace("\n", " ").strip()[:300]
+    return text[: context_chars * 2].replace("\n", " ").strip()[:300]
 
 
 def format_results(results: list[dict], query: str) -> str:

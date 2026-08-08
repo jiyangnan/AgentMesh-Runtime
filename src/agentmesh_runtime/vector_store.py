@@ -25,11 +25,11 @@ import json
 from datetime import datetime
 import os
 import sqlite3
-import struct
 import subprocess
-import time
 from pathlib import Path
 from typing import Optional
+
+from .config import vector_db_path
 
 # ==================== DNS Bypass (DoH) ====================
 
@@ -60,7 +60,9 @@ def _resolve_real_ip(hostname: str) -> Optional[str]:
     try:
         r = subprocess.run(
             ["curl", "-s", f"https://dns.google/resolve?name={hostname}&type=A"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         data = json.loads(r.stdout)
         for answer in data.get("Answer", []):
@@ -76,6 +78,7 @@ def _resolve_real_ip(hostname: str) -> Optional[str]:
 
 # ==================== Vector Store ====================
 
+
 class VectorStore:
     """SQLite-backed Gemini embedding vector store."""
 
@@ -83,8 +86,21 @@ class VectorStore:
     MODEL = "gemini-embedding-2"
 
     def __init__(self, db_path: str | Path | None = None):
-        self.db_path = Path(db_path) if db_path else Path.home() / ".openclaw" / "memory" / "ars_vectors.db"
+        self.db_path = Path(db_path) if db_path else vector_db_path()
+        parent_existed = self.db_path.parent.exists()
+        database_existed = self.db_path.exists()
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        if not parent_existed:
+            try:
+                self.db_path.parent.chmod(0o700)
+            except OSError:
+                pass
         self._init_db()
+        if not database_existed:
+            try:
+                self.db_path.chmod(0o600)
+            except OSError:
+                pass
 
     def _init_db(self):
         """初始化 ars_vectors 表。"""
@@ -99,7 +115,9 @@ class VectorStore:
                 created_at TEXT NOT NULL
             )
         """)
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_ars_vectors_hash ON ars_vectors(text_hash)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_ars_vectors_hash ON ars_vectors(text_hash)"
+        )
         conn.commit()
         conn.close()
 
@@ -120,17 +138,25 @@ class VectorStore:
         url = f"https://{hostname}/v1beta/models/gemini-embedding-2:embedContent?key={key}"
 
         cmd = [
-            "curl", "-s", "-X", "POST", url,
-            "-H", "Content-Type: application/json",
-            "--max-time", "20",
+            "curl",
+            "-s",
+            "-X",
+            "POST",
+            url,
+            "-H",
+            "Content-Type: application/json",
+            "--max-time",
+            "20",
         ]
         if real_ip:
             cmd += ["--resolve", f"{hostname}:443:{real_ip}"]
 
-        body = json.dumps({
-            "model": "models/gemini-embedding-2",
-            "content": {"parts": [{"text": text[:8192]}]}  # 截断防超限
-        })
+        body = json.dumps(
+            {
+                "model": "models/gemini-embedding-2",
+                "content": {"parts": [{"text": text[:8192]}]},  # 截断防超限
+            }
+        )
         cmd += ["-d", body]
 
         try:
@@ -153,16 +179,21 @@ class VectorStore:
         if vec is None:
             return False
 
-        import hashlib, struct as _struct
+        import hashlib
+        import struct as _struct
+
         vec_bytes = _struct.pack(f">{len(vec)}f", *vec)
         text_hash = hashlib.sha256(text.encode()).hexdigest()
         now = datetime.now().isoformat()
 
         conn = sqlite3.connect(str(self.db_path))
-        conn.execute("""
+        conn.execute(
+            """
             INSERT OR REPLACE INTO ars_vectors (id, text, text_hash, vector, source, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (doc_id, text[:10000], text_hash, vec_bytes, source, now))
+        """,
+            (doc_id, text[:10000], text_hash, vec_bytes, source, now),
+        )
         conn.commit()
         conn.close()
         return True
@@ -172,7 +203,9 @@ class VectorStore:
         批量存储 docs = [{"id": str, "text": str, "source": str}]
         返回成功存储的数量。
         """
-        import hashlib, struct as _struct
+        import hashlib
+        import struct as _struct
+
         conn = sqlite3.connect(str(self.db_path))
         stored = 0
         for doc in docs:
@@ -182,10 +215,20 @@ class VectorStore:
             vec_bytes = _struct.pack(f">{len(vec)}f", *vec)
             text_hash = hashlib.sha256(doc["text"].encode()).hexdigest()
             now = datetime.now().isoformat()
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO ars_vectors (id, text, text_hash, vector, source, created_at)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (doc["id"], doc["text"][:10000], text_hash, vec_bytes, doc.get("source","ars"), now))
+            """,
+                (
+                    doc["id"],
+                    doc["text"][:10000],
+                    text_hash,
+                    vec_bytes,
+                    doc.get("source", "ars"),
+                    now,
+                ),
+            )
             stored += 1
         conn.commit()
         conn.close()
@@ -197,6 +240,7 @@ class VectorStore:
     def _cosine(a: bytes, b: bytes) -> float:
         """从 BLOB 计算两个向量的余弦相似度。"""
         import struct as _struct
+
         va = _struct.unpack(f">{VectorStore.DIM}f", a)
         vb = _struct.unpack(f">{VectorStore.DIM}f", b)
         dot = sum(x * y for x, y in zip(va, vb))
@@ -214,6 +258,7 @@ class VectorStore:
             return []
 
         import struct as _struct
+
         q_bytes = _struct.pack(f">{len(q_vec)}f", *q_vec)
 
         conn = sqlite3.connect(str(self.db_path))
@@ -228,12 +273,14 @@ class VectorStore:
                 continue
             score = self._cosine(q_bytes, vec_bytes)
             if score >= min_score:
-                hits.append({
-                    "id": row_id,
-                    "text": text[:500],
-                    "score": round(score, 4),
-                    "source": source or "ars",
-                })
+                hits.append(
+                    {
+                        "id": row_id,
+                        "text": text[:500],
+                        "score": round(score, 4),
+                        "source": source or "ars",
+                    }
+                )
 
         hits.sort(key=lambda x: x["score"], reverse=True)
         return hits[:top_k]
@@ -243,7 +290,9 @@ class VectorStore:
     def stats(self) -> dict:
         """返回向量库统计。"""
         conn = sqlite3.connect(str(self.db_path))
-        cursor = conn.execute("SELECT COUNT(*), COUNT(DISTINCT source) FROM ars_vectors")
+        cursor = conn.execute(
+            "SELECT COUNT(*), COUNT(DISTINCT source) FROM ars_vectors"
+        )
         count, source_count = cursor.fetchone()
         conn.close()
         return {"total_vectors": count, "unique_sources": source_count, "dim": self.DIM}
@@ -292,4 +341,6 @@ if __name__ == "__main__":
 
     elif args.cmd == "stats":
         s = vs.stats()
-        print(f"Vectors: {s['total_vectors']}, Sources: {s['unique_sources']}, Dim: {s['dim']}")
+        print(
+            f"Vectors: {s['total_vectors']}, Sources: {s['unique_sources']}, Dim: {s['dim']}"
+        )

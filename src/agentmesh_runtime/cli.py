@@ -8,10 +8,22 @@ import subprocess
 import sys
 from pathlib import Path
 
+from . import __version__
+from .config import (
+    ensure_runtime_state_dir,
+    memory_db_path,
+    neo4j_uri,
+    session_base_path,
+    state_dir,
+    workspace_path,
+)
+
 PACKAGE = "agentmesh_runtime"
 
 
-class RichHelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
+class RichHelpFormatter(
+    argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter
+):
     pass
 
 
@@ -42,7 +54,11 @@ def cmd_memory(ns: argparse.Namespace) -> int:
 
 
 def cmd_loop(ns: argparse.Namespace) -> int:
-    args = [ns.goal]
+    if ns.loop_cmd == "resume":
+        return run_py(
+            "autonomous_loop", ["--checkpoint", ns.checkpoint, "--mode", "run"]
+        )
+    args = ["--goal", ns.goal]
     if ns.state:
         args += ["--state", ns.state]
     if ns.out:
@@ -52,37 +68,41 @@ def cmd_loop(ns: argparse.Namespace) -> int:
 
 
 def cmd_doctor(_: argparse.Namespace) -> int:
+    ensure_runtime_state_dir()
     report = {
         "cwd": os.getcwd(),
-        "neo4j_uri": os.getenv("ARS_NEO4J_URI", "bolt://localhost:7687"),
-        "session_base": os.getenv("ARS_SESSION_BASE", os.path.expanduser("~/.openclaw/agents")),
-        "memory_db": os.getenv("ARS_MEMORY_DB", os.path.expanduser("~/.openclaw/memory/main.sqlite")),
-        "workspace": os.getenv("ARS_WORKSPACE", os.getcwd()),
+        "version": __version__,
+        "neo4j_uri": neo4j_uri(),
+        "session_base": str(session_base_path()),
+        "memory_db": str(memory_db_path()),
+        "workspace": str(workspace_path()),
+        "state_dir": str(state_dir()),
         "checks": {},
     }
-    import socket, sqlite3
-    from .sync_state import STATE_DIR, sync_status_report
-    from .checkpoint_store import checkpoint_summary
+    import socket
 
-    host, port = "localhost", 7687
+    from .checkpoint_store import checkpoint_summary
+    from .sqlite_store import connect_memory_db
+    from .sync_state import parse_neo4j_host_port, sync_status_report
+
+    host, port = parse_neo4j_host_port(report["neo4j_uri"])
     try:
         with socket.create_connection((host, port), timeout=2):
-            report["checks"]["neo4j_port_7687"] = "ok"
+            report["checks"]["neo4j"] = "ok"
     except Exception as e:
-        report["checks"]["neo4j_port_7687"] = f"fail: {e}"
+        report["checks"]["neo4j"] = f"optional/unavailable: {e}"
     db = Path(report["memory_db"]).expanduser()
-    if db.exists():
-        try:
-            conn = sqlite3.connect(db)
-            cur = conn.cursor()
-            cur.execute("select count(*) from sqlite_master where type='table'")
-            report["checks"]["sqlite"] = f"ok: {cur.fetchone()[0]} tables"
-            conn.close()
-        except Exception as e:
-            report["checks"]["sqlite"] = f"fail: {e}"
-    else:
-        report["checks"]["sqlite"] = "missing"
-    report["checks"]["state_dir"] = "ok" if Path(STATE_DIR).exists() else "missing"
+    try:
+        conn = connect_memory_db(db)
+        cur = conn.cursor()
+        cur.execute(
+            "select count(*) from sqlite_master where type in ('table', 'view')"
+        )
+        report["checks"]["sqlite"] = f"ok: {cur.fetchone()[0]} tables/views"
+        conn.close()
+    except Exception as e:
+        report["checks"]["sqlite"] = f"fail: {e}"
+    report["checks"]["state_dir"] = "ok" if state_dir().exists() else "missing"
     report["memory_health"] = sync_status_report()
     report["checkpoint_health"] = checkpoint_summary()
     print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -129,14 +149,29 @@ def cmd_demo(_: argparse.Namespace) -> int:
     # the file shipped alongside the installed package (useful after ``pip
     # install`` without cloning the repo).
     candidates = [
+        Path(__file__).resolve().parent / "data" / "goal_frame.example.json",
         Path.cwd() / "examples" / "goal_frame.example.json",
-        Path(__file__).resolve().parent.parent.parent / "examples" / "goal_frame.example.json",
+        Path(__file__).resolve().parent.parent.parent
+        / "examples"
+        / "goal_frame.example.json",
     ]
     for c in candidates:
         if c.exists():
-            return run_py("autonomous_loop", [str(c), "--mode", "run"])
-    print("demo example not found; run from the repo root or pass a path explicitly", file=sys.stderr)
+            return run_py(
+                "autonomous_loop", ["--goal", str(c), "--mode", "run", "--demo-policy"]
+            )
+    print(
+        "bundled demo example is missing; reinstall AgentMesh Runtime",
+        file=sys.stderr,
+    )
     return 2
+
+
+def cmd_update(_: argparse.Namespace) -> int:
+    from .release_update import check_for_update
+
+    print(json.dumps(check_for_update(force=True), ensure_ascii=False, indent=2))
+    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -149,7 +184,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=(
             "Examples:\n"
             "  agentmesh-runtime doctor\n"
-            "  agentmesh-runtime memory recall \"some query\"\n"
+            '  agentmesh-runtime memory recall "some query"\n'
             "  agentmesh-runtime memory ingest-file /path/to/session.jsonl discord\n"
             "  agentmesh-runtime loop run examples/goal_frame.example.json\n"
             "  agentmesh-runtime sync status\n"
@@ -158,6 +193,9 @@ def build_parser() -> argparse.ArgumentParser:
             "  agentmesh-runtime demo"
         ),
         formatter_class=RichHelpFormatter,
+    )
+    p.add_argument(
+        "--version", action="version", version=f"agentmesh-runtime {__version__}"
     )
     sub = p.add_subparsers(dest="cmd", required=True, metavar="COMMAND")
 
@@ -175,18 +213,24 @@ def build_parser() -> argparse.ArgumentParser:
         description="Recall memory with automatic backend failover and merged ranking.",
         epilog=(
             "Examples:\n"
-            "  xng memory recall \"First-Principles-Only\"\n"
-            "  xng memory recall \"ars-demo-001\" --top-k 5\n"
-            "  xng memory recall \"neo4j memory\" --json --no-files"
+            '  xng memory recall "First-Principles-Only"\n'
+            '  xng memory recall "ars-demo-001" --top-k 5\n'
+            '  xng memory recall "neo4j memory" --json --no-files'
         ),
         formatter_class=RichHelpFormatter,
     )
     mr.add_argument("query", help="query text to search for")
-    mr.add_argument("--top-k", type=int, default=8, help="maximum number of hits to return")
-    mr.add_argument("--json", action="store_true", help="emit JSON output when supported")
+    mr.add_argument(
+        "--top-k", type=int, default=8, help="maximum number of hits to return"
+    )
+    mr.add_argument(
+        "--json", action="store_true", help="emit JSON output when supported"
+    )
     mr.add_argument("--no-neo4j", action="store_true", help="skip Neo4j recall")
     mr.add_argument("--no-sqlite", action="store_true", help="skip SQLite FTS recall")
-    mr.add_argument("--no-files", action="store_true", help="skip raw file/session grep fallback")
+    mr.add_argument(
+        "--no-files", action="store_true", help="skip raw file/session grep fallback"
+    )
     mr.set_defaults(func=cmd_memory)
 
     mif = msub.add_parser(
@@ -197,7 +241,9 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=RichHelpFormatter,
     )
     mif.add_argument("path", help="path to a session transcript file")
-    mif.add_argument("channel", nargs="?", default="discord", help="source channel label")
+    mif.add_argument(
+        "channel", nargs="?", default="discord", help="source channel label"
+    )
     mif.set_defaults(func=cmd_memory)
 
     mis = msub.add_parser(
@@ -208,16 +254,20 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=RichHelpFormatter,
     )
     mis.add_argument("session_id", help="session id to ingest")
-    mis.add_argument("channel", nargs="?", default="discord", help="source channel label")
+    mis.add_argument(
+        "channel", nargs="?", default="discord", help="source channel label"
+    )
     mis.set_defaults(func=cmd_memory)
 
-    l = sub.add_parser(
+    loop_parser = sub.add_parser(
         "loop",
         help="run the bounded autonomous loop",
         description="Autonomous-Loop operations for goal execution.",
         formatter_class=RichHelpFormatter,
     )
-    lsub = l.add_subparsers(dest="loop_cmd", required=True, metavar="LOOP_COMMAND")
+    lsub = loop_parser.add_subparsers(
+        dest="loop_cmd", required=True, metavar="LOOP_COMMAND"
+    )
     for mode in ("run", "step"):
         lp = lsub.add_parser(
             mode,
@@ -234,6 +284,15 @@ def build_parser() -> argparse.ArgumentParser:
         lp.add_argument("--state", help="path to an existing loop state JSON")
         lp.add_argument("--out", help="write resulting loop state to this path")
         lp.set_defaults(func=cmd_loop)
+
+    resume = lsub.add_parser(
+        "resume",
+        help="resume a schema-v2 checkpoint",
+        description="Explicitly resume a complete checkpoint saved by AgentMesh Runtime 0.1.1+.",
+        formatter_class=RichHelpFormatter,
+    )
+    resume.add_argument("checkpoint", help="path to a schema-v2 checkpoint JSON")
+    resume.set_defaults(func=cmd_loop)
 
     s = sub.add_parser(
         "sync",
@@ -259,7 +318,9 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="Examples:\n  xng sync backfill\n  xng sync backfill --limit 10",
         formatter_class=RichHelpFormatter,
     )
-    sb.add_argument("--limit", type=int, help="maximum number of pending entries to backfill")
+    sb.add_argument(
+        "--limit", type=int, help="maximum number of pending entries to backfill"
+    )
     sb.set_defaults(func=cmd_sync)
 
     d = sub.add_parser(
@@ -278,10 +339,20 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="Examples:\n  xng rehydrate\n  xng rehydrate --format bootstrap\n  xng rehydrate --write-default --print-path",
         formatter_class=RichHelpFormatter,
     )
-    r.add_argument("--format", choices=["json", "bootstrap"], default="json", help="output format")
+    r.add_argument(
+        "--format", choices=["json", "bootstrap"], default="json", help="output format"
+    )
     r.add_argument("--out", help="write output to a file")
-    r.add_argument("--write-default", action="store_true", help="write to the standard recovery path under state/")
-    r.add_argument("--print-path", action="store_true", help="print the resolved output path after writing")
+    r.add_argument(
+        "--write-default",
+        action="store_true",
+        help="write to the standard recovery path under state/",
+    )
+    r.add_argument(
+        "--print-path",
+        action="store_true",
+        help="print the resolved output path after writing",
+    )
     r.set_defaults(func=cmd_rehydrate)
 
     b = sub.add_parser(
@@ -292,7 +363,11 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=RichHelpFormatter,
     )
     b.add_argument("--out", help="write bootstrap text to a file")
-    b.add_argument("--stdout", action="store_true", help="print bootstrap text instead of writing the standard startup file")
+    b.add_argument(
+        "--stdout",
+        action="store_true",
+        help="print bootstrap text instead of writing the standard startup file",
+    )
     b.set_defaults(func=cmd_bootstrap)
 
     demo = sub.add_parser(
@@ -303,13 +378,32 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=RichHelpFormatter,
     )
     demo.set_defaults(func=cmd_demo)
+
+    update = sub.add_parser(
+        "update",
+        help="check whether a newer local Runtime release is available",
+        description="Check the public Runtime repository without requiring an account or cloud service.",
+        formatter_class=RichHelpFormatter,
+    )
+    update_sub = update.add_subparsers(
+        dest="update_cmd", required=True, metavar="UPDATE_COMMAND"
+    )
+    update_check = update_sub.add_parser(
+        "check", help="force an immediate version check"
+    )
+    update_check.set_defaults(func=cmd_update)
     return p
 
 
 def main() -> int:
     parser = build_parser()
     ns = parser.parse_args()
-    return ns.func(ns)
+    result = ns.func(ns)
+    if ns.cmd != "update":
+        from .release_update import maybe_print_update_notice
+
+        maybe_print_update_notice()
+    return result
 
 
 if __name__ == "__main__":

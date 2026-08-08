@@ -5,13 +5,14 @@ import json
 import os
 import socket
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parent.parent
-STATE_DIR = Path(os.getenv("ARS_STATE_DIR", str(ROOT / "state")))
+from .config import ensure_runtime_state_dir, neo4j_uri, state_dir
+
+
+STATE_DIR = state_dir()
 LEDGER_PATH = STATE_DIR / "sync-ledger.jsonl"
-NEO4J_URI = os.getenv("ARS_NEO4J_URI", "bolt://localhost:7687")
+NEO4J_URI = neo4j_uri()
 
 
 def now_iso() -> str:
@@ -19,7 +20,12 @@ def now_iso() -> str:
 
 
 def ensure_state_dir() -> None:
+    ensure_runtime_state_dir()
     STATE_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        STATE_DIR.chmod(0o700)
+    except OSError:
+        pass
 
 
 def append_ledger_event(entry: dict[str, Any]) -> dict[str, Any]:
@@ -27,12 +33,17 @@ def append_ledger_event(entry: dict[str, Any]) -> dict[str, Any]:
     payload = dict(entry)
     payload.setdefault("created_at", now_iso())
     payload["updated_at"] = now_iso()
-    with LEDGER_PATH.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    encoded = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
+    fd = os.open(LEDGER_PATH, os.O_APPEND | os.O_CREAT | os.O_WRONLY, 0o600)
+    try:
+        os.write(fd, encoded)
+    finally:
+        os.close(fd)
     return payload
 
 
 def load_ledger_events() -> list[dict[str, Any]]:
+    ensure_state_dir()
     if not LEDGER_PATH.exists():
         return []
     rows = []
@@ -98,9 +109,20 @@ def sync_status_report(sample: int = 5) -> dict[str, Any]:
         for r in latest.values()
         if r.get("last_error")
     ]
-    recent_failures = sorted(recent_failures, key=lambda x: str(x.get("event_id")), reverse=True)[:sample]
+    recent_failures = sorted(
+        recent_failures, key=lambda x: str(x.get("event_id")), reverse=True
+    )[:sample]
     sqlite_success = sum(1 for r in latest.values() if r.get("sqlite_ok"))
     neo4j_success = sum(1 for r in latest.values() if r.get("neo4j_ok"))
+    primary_failures = sum(1 for r in latest.values() if not r.get("sqlite_ok"))
+    if primary_failures:
+        recommended_action = (
+            "Run agentmesh-runtime doctor and repair the reported SQLite error."
+        )
+    elif pending:
+        recommended_action = "agentmesh-runtime sync backfill"
+    else:
+        recommended_action = None
     return {
         "ledger_path": str(LEDGER_PATH),
         "ledger_entries": len(latest),
@@ -108,9 +130,11 @@ def sync_status_report(sample: int = 5) -> dict[str, Any]:
         "neo4j_ready": neo4j_is_ready(),
         "sqlite_success_entries": sqlite_success,
         "neo4j_success_entries": neo4j_success,
+        "primary_write_failures": primary_failures,
+        "healthy": primary_failures == 0 and len(pending) == 0,
         "drift_detected": len(pending) > 0 or neo4j_success < sqlite_success,
         "backfill_needed": len(pending) > 0,
-        "recommended_action": "xng sync backfill" if len(pending) > 0 else None,
+        "recommended_action": recommended_action,
         "pending_sample": [
             {
                 "event_id": r.get("event_id"),

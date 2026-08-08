@@ -1,6 +1,6 @@
 # Module 4 — Consistency and Recovery
 
-**Status**: Phase 1 consistency implemented, Phase 2 recovery implemented (checkpoint + rehydrate v1)
+**Status**: Phase 1 consistency implemented, Phase 2 recovery implemented (resumable checkpoint schema v2 + rehydrate)
 
 This module hardens the runtime against restart-order failures:
 
@@ -49,7 +49,7 @@ agentmesh-runtime doctor
 Stored at:
 
 ```text
-state/sync-ledger.jsonl
+~/.agentmesh/runtime/state/sync-ledger.jsonl
 ```
 
 Each line is an append-only state transition for one event.
@@ -213,30 +213,38 @@ After consistency is restored, recover task state on startup.
 
 ### Files
 
-- `src/checkpoint_store.py`
-- `src/startup_rehydrate.py`
+- `src/agentmesh_runtime/checkpoint_store.py`
+- `src/agentmesh_runtime/startup_rehydrate.py`
 
 ### Commands
 
 ```bash
 agentmesh-runtime rehydrate
 agentmesh-runtime bootstrap
+agentmesh-runtime loop resume ~/.agentmesh/runtime/state/checkpoints/<checkpoint>.json
 ```
 
 ### Checkpoint schema
 
 ```json
 {
+  "checkpoint_schema_version": 2,
   "goal_id": "ars-demo-001",
-  "title": "Integrate consistency layer",
-  "status": "active",
-  "current_phase": "phase-1-sync",
-  "latest_decision": "Implement ledger + backfill before rehydrate",
-  "blockers": [],
-  "next_step": "Verify SQLite-only write can later reach Neo4j",
-  "updated_at": "2026-04-29T22:00:00+08:00"
+  "loop_id": "adda3d9d-6898-4c3f-942b-1608545b6da8",
+  "status": "waiting_human",
+  "goal_frame": {
+    "goal_id": "ars-demo-001",
+    "goal": "Demonstrate a bounded loop"
+  },
+  "loop_state": {
+    "iteration": 1,
+    "verification_result": "unknown",
+    "needs_human_input": true
+  }
 }
 ```
+
+The actual `goal_frame` and `loop_state` objects contain every dataclass field. Summary fields remain at the top level for rehydrate and human inspection; resume reads the complete nested objects.
 
 ### Rehydrate snapshot schema
 
@@ -271,14 +279,14 @@ Two startup-friendly outputs now exist:
    agentmesh-runtime rehydrate
    agentmesh-runtime rehydrate --write-default --print-path
    ```
-   Standard file: `state/rehydrate-snapshot.json`
+  Standard file: `~/.agentmesh/runtime/state/rehydrate-snapshot.json`
 
 2. **Bootstrap text** for direct session-context injection
    ```bash
    agentmesh-runtime bootstrap
    agentmesh-runtime bootstrap --stdout
    ```
-   Standard file: `state/startup-context.txt`
+  Standard file: `~/.agentmesh/runtime/state/startup-context.txt`
 
 Recommended startup flow:
 
@@ -287,7 +295,7 @@ process starts
 -> agentmesh-runtime sync status
 -> if pending_backfill > 0 and Neo4j is ready: agentmesh-runtime sync backfill
 -> agentmesh-runtime bootstrap
--> read state/startup-context.txt
+-> read ~/.agentmesh/runtime/state/startup-context.txt
 -> inject that bootstrap text into the new session startup context
 ```
 

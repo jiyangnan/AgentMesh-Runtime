@@ -8,7 +8,7 @@ AgentMesh Runtime sits *under* a caller agent. The agent supplies the reasoning;
 Multi-backend ingest and recall. Sessions are summarized, tagged with topics and entities, and stored in SQLite first, then Neo4j. Recall fans out across Neo4j → SQLite FTS5 (BM25) → raw file grep → optional Gemini vector, then merges and re-ranks.
 
 ### 2. OODA loop scaffolding
-A state machine — Observe / Orient / Decide / Act / Verify / Record — that drives a single bounded goal toward `done`, `blocked`, `waiting_human`, or `aborted`. The decide and verify steps are intentionally minimal stubs; the *caller agent* supplies real reasoning. The runtime's job is to enforce that every step happens and that every action is recorded.
+A state machine — Observe / Orient / Decide / Act / Verify / Record — that frames a single bounded goal toward `done`, `blocked`, `waiting_human`, or `aborted`. The default policy is fail-closed: it never says a simulated action was performed and stops at `waiting_human` when a real executor is required. A caller can inject its own policy; only the bundled smoke demo uses a deterministic demo policy.
 
 ### 3. Consistency and recovery
 A deferred sync ledger across SQLite ↔ Neo4j, a checkpoint store for active loops, and a `rehydrate` command that joins them into a startup snapshot. Lets the agent pick up where it left off after a crash, a restart, or a backend outage.
@@ -45,7 +45,7 @@ The system must not depend on a single backend.
 
 ## What is intentionally not in this architecture
 
-- **No LLM call** anywhere in this package. The "intelligence" comes from the caller agent.
+- **No model-backed decision call.** The "intelligence" comes from the caller agent. Optional BYOK Gemini is used only for embeddings and is disabled unless the user supplies a key.
 - **No server, no multi-tenant layer.** Everything runs in one local process.
 - **No reranker model.** Re-ranking is per-backend weights + simple heuristics.
 - **No automated decision/verify intelligence.** Those are caller-side responsibilities.

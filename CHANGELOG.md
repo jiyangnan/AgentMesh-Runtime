@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.1 — Unreleased
+
+Reliability release for real standalone installs.
+
+- Moved checkpoints, sync ledger, loop logs, and update cache out of the package/Git tree into `~/.agentmesh/runtime` with one-time migration of genuine legacy state.
+- Added automatic SQLite schema initialization and made newly ingested episodes immediately searchable through FTS5.
+- Made every Neo4j recall path fail open, fixed `--no-neo4j`, parameterized direct graph queries, and exposed pending backfill/primary write failures accurately.
+- Replaced the default loop's simulated success with fail-closed `waiting_human`, complete schema-v2 checkpoints, and explicit `loop resume` support. The deterministic policy is now demo-only.
+- Added `--version`, `update check`, and a five-minute cached, non-blocking release notice with an opt-out.
+- Bound the bundled Neo4j ports to localhost and made CI lint failures blocking.
+
 ## 0.1.0 — Unreleased
 
 First public release as **AgentMesh Runtime** — a productized fork of the internal `agent-reinforcement-system` runtime that originally lived inside the author's OpenClaw agent.

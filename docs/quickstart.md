@@ -1,6 +1,6 @@
 # Quickstart
 
-## 1. Start Neo4j (optional but recommended)
+## 1. Start Neo4j (optional)
 ```bash
 docker compose -f docker/docker-compose.neo4j.yml up -d
 ```
@@ -11,14 +11,14 @@ uv sync
 ```
 
 ## 3. Configure (env)
-Defaults still point at `~/.openclaw/*` because that's where this code originally lived. If you don't run OpenClaw, set these:
+Standalone defaults work without configuration. Set these only when you want custom locations or the optional graph backend:
 ```bash
-export ARS_NEO4J_URI=bolt://localhost:7687
-export ARS_NEO4J_USER=neo4j
-export ARS_NEO4J_PASSWORD=password
-export ARS_SESSION_BASE=~/your-agent/agents      # where <agent>/sessions/*.jsonl live
-export ARS_MEMORY_DB=~/your-agent/main.sqlite
-export ARS_WORKSPACE=$PWD
+export AGENTMESH_RUNTIME_NEO4J_URI=bolt://localhost:7687
+export AGENTMESH_RUNTIME_NEO4J_USER=neo4j
+export AGENTMESH_RUNTIME_NEO4J_PASSWORD=password
+export AGENTMESH_RUNTIME_SESSION_BASE=~/your-agent/agents
+export AGENTMESH_RUNTIME_MEMORY_DB=~/your-agent/main.sqlite
+export AGENTMESH_RUNTIME_WORKSPACE=$PWD
 # optional:
 # export GEMINI_API_KEY=...                       # enables Gemini vector recall
 ```
@@ -27,7 +27,7 @@ export ARS_WORKSPACE=$PWD
 ```bash
 uv run agentmesh-runtime doctor
 ```
-A clean run prints a JSON report with `neo4j_port_7687: ok`, the SQLite table count, and ledger / checkpoint health.
+A clean standalone run reports an initialized SQLite database and user-owned state directory. Neo4j may report `optional/unavailable`; SQLite recall remains usable.
 
 ## 5. Ingest a transcript
 ```bash
@@ -55,11 +55,21 @@ uv run agentmesh-runtime demo
 ```
 This drives `examples/goal_frame.example.json` through the loop. It converges in 1 iteration by design — for real work, write your own `goal_frame.json` (see [schemas/goal_frame.schema.json](../schemas/goal_frame.schema.json)).
 
+The bundled demo uses a deterministic smoke policy. A normal `loop run` never pretends an action happened: without an external caller/executor it stops at `waiting_human` and saves a resumable checkpoint.
+
 ## 9. Recover after a restart
 ```bash
 uv run agentmesh-runtime rehydrate --write-default --print-path
 ```
 The printed file is the snapshot you can inject into your next session's bootstrap.
+
+## 10. Check for updates
+
+```bash
+uv run agentmesh-runtime update check
+```
+
+Normal commands also perform a five-minute cached, fail-open check against the public repository. Set `AGENTMESH_RUNTIME_SKIP_UPDATE=1` to disable it.
 
 ---
 

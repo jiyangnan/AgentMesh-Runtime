@@ -10,6 +10,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      AGENTMESH_RUNTIME_SKIP_UPDATE: "1"
     strategy:
       fail-fast: false
       matrix:
@@ -35,12 +37,13 @@ jobs:
         run: |
           uv run python - <<'PY'
           from agentmesh_runtime import (
-              autonomous_loop, checkpoint_store, episode_ingest,
+              autonomous_loop, checkpoint_store, config, episode_ingest,
               journal_to_episode, kb_to_graph, neo4j_recall,
+              release_update, sqlite_store,
               startup_rehydrate, sync_backfill, sync_state,
               unified_memory_recall, vector_store, cli,
           )
-          print("OK: all 12 modules import")
+          print("OK: all package modules import")
           PY
 
       - name: CLI smoke — three names resolve
@@ -57,5 +60,5 @@ jobs:
       - name: pytest
         run: uv run pytest -v
 
-      - name: ruff (informational)
-        run: uv run ruff check src/ || true
+      - name: ruff
+        run: uv run ruff check src/ tests/

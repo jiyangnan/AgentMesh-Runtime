@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/agent-reinforcement-system/loop_state.schema.json",
+  "$id": "https://raw.githubusercontent.com/jiyangnan/AgentMesh-Runtime/main/schemas/loop_state.schema.json",
   "title": "LoopState",
   "type": "object",
   "required": [

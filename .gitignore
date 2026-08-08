@@ -7,6 +7,7 @@ __pycache__/
 runtime/*.jsonl
 state/*.jsonl
 state/checkpoints/
+src/state/
 
 # 运行时数据（不含敏感信息，但不应进 repo）
 state/rehydrate-snapshot.json

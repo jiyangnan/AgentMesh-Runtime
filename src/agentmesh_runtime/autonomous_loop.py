@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Autonomous Loop runtime for agent-reinforcement-system.
+Autonomous Loop scaffolding for AgentMesh Runtime.
 
 Integrated version:
 - Module 1: First-Principles Runtime
@@ -15,7 +15,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sys
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -25,8 +24,16 @@ from typing import Any
 from .unified_memory_recall import recall as memory_recall
 from .episode_ingest import ingest_event
 from .checkpoint_store import save_checkpoint
+from .config import runtime_home
 
-VALID_STATUSES = {"initialized", "active", "waiting_human", "blocked", "done", "aborted"}
+VALID_STATUSES = {
+    "initialized",
+    "active",
+    "waiting_human",
+    "blocked",
+    "done",
+    "aborted",
+}
 VALID_STEPS = ["observe", "orient", "decide", "act", "verify", "record"]
 
 
@@ -84,9 +91,16 @@ class AutonomousLoopError(RuntimeError):
 
 
 class HAMemoryAdapter:
-    def __init__(self, top_k: int = 5, log_path: str | None = None, channel: str = "runtime"):
+    def __init__(
+        self, top_k: int = 5, log_path: str | None = None, channel: str = "runtime"
+    ):
         self.top_k = top_k
-        self.log_path = Path(log_path or os.getenv("ARS_LOOP_MEMORY_LOG", "./runtime/loop_memory.jsonl"))
+        self.log_path = Path(
+            log_path
+            or os.getenv("AGENTMESH_RUNTIME_LOOP_MEMORY_LOG")
+            or os.getenv("ARS_LOOP_MEMORY_LOG")
+            or runtime_home() / "loop_memory.jsonl"
+        )
         self.channel = channel
 
     def recall(self, query: str) -> list[dict[str, Any]]:
@@ -95,8 +109,16 @@ class HAMemoryAdapter:
 
     def record(self, item: dict[str, Any]) -> dict[str, Any]:
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
-        with self.log_path.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(item, ensure_ascii=False) + "\n")
+        try:
+            self.log_path.parent.chmod(0o700)
+        except OSError:
+            pass
+        encoded = (json.dumps(item, ensure_ascii=False) + "\n").encode("utf-8")
+        fd = os.open(self.log_path, os.O_APPEND | os.O_CREAT | os.O_WRONLY, 0o600)
+        try:
+            os.write(fd, encoded)
+        finally:
+            os.close(fd)
         session_id = f"loop:{item['loop_id']}:{item['iteration']}"
         summary = f"Loop {item['goal_id']} iteration {item['iteration']}"
         full_text = json.dumps(item, ensure_ascii=False)
@@ -114,7 +136,9 @@ class HAMemoryAdapter:
 class FirstPrinciplesEngine:
     """Small reasoning helper for Orient/Decide."""
 
-    def orient(self, goal: GoalFrame, state: LoopState, observation: dict[str, Any]) -> dict[str, Any]:
+    def orient(
+        self, goal: GoalFrame, state: LoopState, observation: dict[str, Any]
+    ) -> dict[str, Any]:
         premises = [
             f"goal={goal.goal}",
             f"success_criteria={len(goal.success_criteria)}",
@@ -124,10 +148,16 @@ class FirstPrinciplesEngine:
         needed_conditions = [f"must satisfy: {x}" for x in goal.success_criteria]
         hypotheses = []
         if observation.get("memory_hits"):
-            hypotheses.append("Historical memory contains similar context that can reduce uncertainty.")
-        hypotheses.append("The next action should be the smallest move that reduces uncertainty or verifies one success criterion.")
+            hypotheses.append(
+                "Historical memory contains similar context that can reduce uncertainty."
+            )
+        hypotheses.append(
+            "The next action should be the smallest move that reduces uncertainty or verifies one success criterion."
+        )
         if goal.external_side_effects:
-            hypotheses.append("External side effects increase risk and may require human approval before action.")
+            hypotheses.append(
+                "External side effects increase risk and may require human approval before action."
+            )
         explanation = {
             "premises": premises,
             "needed_conditions": needed_conditions,
@@ -136,15 +166,23 @@ class FirstPrinciplesEngine:
         }
         return explanation
 
-    def decide(self, goal: GoalFrame, state: LoopState, orientation: dict[str, Any], observation: dict[str, Any]) -> dict[str, Any]:
+    def decide(
+        self,
+        goal: GoalFrame,
+        state: LoopState,
+        orientation: dict[str, Any],
+        observation: dict[str, Any],
+    ) -> dict[str, Any]:
         memory_hits = observation.get("memory_hits", [])
         top_memory = memory_hits[0] if memory_hits else None
         action = "produce_minimal_plan"
         rationale = "No narrower executable action was preconfigured, so the loop should first produce a minimal verified next-step plan."
 
         if top_memory:
-            action = f"reuse_or_compare_memory:{top_memory.get('location','unknown')}"
-            rationale = "Closest prior episode should be compared before acting from scratch."
+            action = f"reuse_or_compare_memory:{top_memory.get('location', 'unknown')}"
+            rationale = (
+                "Closest prior episode should be compared before acting from scratch."
+            )
 
         needs_human_input = False
         if goal.external_side_effects and goal.risk_level in {"medium", "high"}:
@@ -167,7 +205,11 @@ class FirstPrinciplesEngine:
 class IntegratedPolicy:
     """Policy that actually connects Module 1 + Module 2 into Module 3."""
 
-    def __init__(self, memory: HAMemoryAdapter | None = None, fp: FirstPrinciplesEngine | None = None):
+    def __init__(
+        self,
+        memory: HAMemoryAdapter | None = None,
+        fp: FirstPrinciplesEngine | None = None,
+    ):
         self.memory = memory or HAMemoryAdapter()
         self.fp = fp or FirstPrinciplesEngine()
 
@@ -183,10 +225,14 @@ class IntegratedPolicy:
             "evidence": evidence,
         }
 
-    def orient(self, goal: GoalFrame, state: LoopState, observation: dict[str, Any]) -> dict[str, Any]:
+    def orient(
+        self, goal: GoalFrame, state: LoopState, observation: dict[str, Any]
+    ) -> dict[str, Any]:
         return self.fp.orient(goal, state, observation)
 
-    def decide(self, goal: GoalFrame, state: LoopState, orientation: dict[str, Any]) -> dict[str, Any]:
+    def decide(
+        self, goal: GoalFrame, state: LoopState, orientation: dict[str, Any]
+    ) -> dict[str, Any]:
         observation = {"memory_hits": [], "observation": state.last_observation}
         # state.last_observation is string, but current iteration's memory hit count is not preserved there.
         # recover from hint if present; the decision engine mainly needs the memory hits count / top hit.
@@ -194,26 +240,45 @@ class IntegratedPolicy:
             observation = getattr(state, "_observation_cache")
         return self.fp.decide(goal, state, orientation, observation)
 
-    def act(self, goal: GoalFrame, state: LoopState, decision: dict[str, Any]) -> dict[str, Any]:
+    def act(
+        self, goal: GoalFrame, state: LoopState, decision: dict[str, Any]
+    ) -> dict[str, Any]:
         if decision.get("needs_human_input"):
-            return {"performed": False, "result": decision.get("rationale", "waiting for human input")}
+            return {
+                "performed": False,
+                "result": decision.get("rationale", "waiting for human input"),
+            }
         action = decision.get("action", "")
         return {
-            "performed": True,
-            "result": f"simulated execution: {action}",
+            "performed": False,
+            "requires_external_executor": True,
+            "result": f"external executor required for action: {action}",
             "rationale": decision.get("rationale", ""),
         }
 
-    def verify(self, goal: GoalFrame, state: LoopState, action_result: dict[str, Any]) -> dict[str, Any]:
+    def verify(
+        self, goal: GoalFrame, state: LoopState, action_result: dict[str, Any]
+    ) -> dict[str, Any]:
         if not action_result.get("performed"):
-            return {"result": "unknown", "reason": action_result.get("result", "not performed")}
+            return {
+                "result": "unknown",
+                "reason": action_result.get("result", "not performed"),
+            }
         if state.selected_action.startswith("reuse_or_compare_memory:"):
-            return {"result": "pass", "reason": "Historical context successfully retrieved and used as the next-step anchor."}
+            return {
+                "result": "pass",
+                "reason": "Historical context successfully retrieved and used as the next-step anchor.",
+            }
         if state.selected_action == "produce_minimal_plan":
-            return {"result": "pass", "reason": "A bounded next-step plan was produced without violating constraints."}
+            return {
+                "result": "pass",
+                "reason": "A bounded next-step plan was produced without violating constraints.",
+            }
         return {"result": "pass", "reason": action_result.get("result", "ok")}
 
-    def record(self, goal: GoalFrame, state: LoopState, verification: dict[str, Any]) -> dict[str, Any]:
+    def record(
+        self, goal: GoalFrame, state: LoopState, verification: dict[str, Any]
+    ) -> dict[str, Any]:
         item = {
             "ts": now_iso(),
             "goal_id": goal.goal_id,
@@ -230,8 +295,31 @@ class IntegratedPolicy:
         return {"memory_items": [item], "ingest": ingest}
 
 
+class DemoPolicy(IntegratedPolicy):
+    """Deterministic policy used only by the bundled smoke demo."""
+
+    def act(
+        self, goal: GoalFrame, state: LoopState, decision: dict[str, Any]
+    ) -> dict[str, Any]:
+        return {
+            "performed": True,
+            "result": f"demo execution: {decision.get('action', '')}",
+            "rationale": decision.get("rationale", ""),
+        }
+
+    def verify(
+        self, goal: GoalFrame, state: LoopState, action_result: dict[str, Any]
+    ) -> dict[str, Any]:
+        return {
+            "result": "pass",
+            "reason": "Bundled demo policy completed its deterministic smoke action.",
+        }
+
+
 class AutonomousLoop:
-    def __init__(self, goal: GoalFrame, state: LoopState | None = None, policy: Any | None = None):
+    def __init__(
+        self, goal: GoalFrame, state: LoopState | None = None, policy: Any | None = None
+    ):
         self.goal = goal
         self.state = state or LoopState(loop_id=str(uuid.uuid4()), goal_id=goal.goal_id)
         self.policy = policy or IntegratedPolicy()
@@ -258,6 +346,7 @@ class AutonomousLoop:
         self.state.updated_at = now_iso()
 
     def _checkpoint_payload(self) -> dict[str, Any]:
+        loop_state = asdict(self.state)
         return {
             "goal_id": self.goal.goal_id,
             "loop_id": self.state.loop_id,
@@ -274,6 +363,9 @@ class AutonomousLoop:
             "needs_human_input": self.state.needs_human_input,
             "last_error": self.state.last_error,
             "updated_at": self.state.updated_at,
+            "checkpoint_schema_version": 2,
+            "goal_frame": asdict(self.goal),
+            "loop_state": loop_state,
         }
 
     def _save_checkpoint(self) -> None:
@@ -319,6 +411,17 @@ class AutonomousLoop:
             self.step()
         return self.state
 
+    def resume(self) -> LoopState:
+        """Explicitly resume a checkpoint that was waiting or blocked."""
+
+        if self.state.status in {"waiting_human", "blocked"}:
+            self.state.status = "active"
+            self.state.needs_human_input = False
+            self.state.current_step = "observe"
+            self.state.next_iteration_hint = "resumed explicitly"
+            self._touch()
+        return self.state
+
     def _run_observe(self) -> dict[str, Any]:
         self.state.current_step = "observe"
         obs = self.policy.observe(self.goal, self.state)
@@ -342,7 +445,13 @@ class AutonomousLoop:
 
     def _run_act(self, decision: dict[str, Any]) -> dict[str, Any]:
         self.state.current_step = "act"
-        return self.policy.act(self.goal, self.state, decision)
+        result = self.policy.act(self.goal, self.state, decision)
+        if not result.get("performed") and result.get("requires_external_executor"):
+            self.state.needs_human_input = True
+            blocker = result.get("result", "external executor required")
+            if blocker not in self.state.blockers:
+                self.state.blockers.append(blocker)
+        return result
 
     def _run_verify(self, action_result: dict[str, Any]) -> dict[str, Any]:
         self.state.current_step = "verify"
@@ -377,7 +486,9 @@ class AutonomousLoop:
             return
 
         if verification.get("result") == "unknown":
-            self.state.status = "waiting_human" if self.state.needs_human_input else "active"
+            self.state.status = (
+                "waiting_human" if self.state.needs_human_input else "active"
+            )
             self.state.next_iteration_hint = "need verification or authorization"
             return
 
@@ -391,25 +502,60 @@ class AutonomousLoop:
         state = None
         if state_path and os.path.exists(state_path):
             with open(state_path, encoding="utf-8") as f:
-                state = LoopState(**json.load(f))
+                state_payload = json.load(f)
+            if isinstance(state_payload.get("loop_state"), dict):
+                state_payload = state_payload["loop_state"]
+            state = LoopState(**state_payload)
         return AutonomousLoop(goal, state)
+
+    @staticmethod
+    def from_checkpoint(path: str, policy: Any | None = None) -> "AutonomousLoop":
+        with open(path, encoding="utf-8") as f:
+            payload = json.load(f)
+        if not isinstance(payload.get("goal_frame"), dict) or not isinstance(
+            payload.get("loop_state"), dict
+        ):
+            raise AutonomousLoopError(
+                "Checkpoint predates resumable schema v2; use rehydrate to recover its summary."
+            )
+        return AutonomousLoop(
+            GoalFrame(**payload["goal_frame"]),
+            LoopState(**payload["loop_state"]),
+            policy=policy,
+        )
 
     def save_state(self, path: str) -> None:
         payload = asdict(self.state)
         payload.pop("_observation_cache", None)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=2)
+        destination = Path(path)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        temporary = destination.with_suffix(destination.suffix + ".tmp")
+        temporary.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        temporary.chmod(0o600)
+        temporary.replace(destination)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Autonomous Loop runtime")
-    parser.add_argument("goal", help="Path to goal frame JSON")
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--goal", help="Path to goal frame JSON")
+    source.add_argument("--checkpoint", help="Resume a schema-v2 checkpoint")
     parser.add_argument("--state", help="Path to existing loop state JSON")
     parser.add_argument("--out", help="Write resulting loop state to file")
     parser.add_argument("--mode", choices=["step", "run"], default="run")
+    parser.add_argument("--demo-policy", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
 
-    loop = AutonomousLoop.from_files(args.goal, args.state)
+    policy = DemoPolicy() if args.demo_policy else None
+    if args.checkpoint:
+        loop = AutonomousLoop.from_checkpoint(args.checkpoint, policy=policy)
+        loop.resume()
+    else:
+        loop = AutonomousLoop.from_files(args.goal, args.state)
+        if policy is not None:
+            loop.policy = policy
     result = loop.step() if args.mode == "step" else loop.run()
 
     payload = asdict(result)
