@@ -20,8 +20,8 @@
 <meta name="twitter:image" content="https://agentmesh360.com/agentmesh360-icon.png" />
 <link rel="canonical" href="https://runtime.agentmesh360.com/ja/" />
 <link rel="alternate" type="text/markdown" href="/llms.txt" title="AgentMesh Runtime LLMs.txt" />
-<link rel="alternate" hreflang="zh-CN" href="https://runtime.agentmesh360.com/" />
-<link rel="alternate" hreflang="en" href="https://runtime.agentmesh360.com/en/" />
+<link rel="alternate" hreflang="zh-CN" href="https://runtime.agentmesh360.com/zh/" />
+<link rel="alternate" hreflang="en" href="https://runtime.agentmesh360.com/" />
 <link rel="alternate" hreflang="ja" href="https://runtime.agentmesh360.com/ja/" />
 <link rel="alternate" hreflang="ko" href="https://runtime.agentmesh360.com/ko/" />
 <link rel="alternate" hreflang="x-default" href="https://runtime.agentmesh360.com/" />
@@ -139,7 +139,7 @@
   @media(max-width:1100px){.nav-links a.nav-extra{display:none}}
   @media(max-width:880px){.nav-links a.nav-section{display:none}}
   @media(max-width:720px){.nav-links a:not(.nav-cta):not(.lang){display:none} .lang-switch{gap:7px} .brand small{display:none}}
-  @media(max-width:480px){.nav-inner{gap:12px;padding:14px 16px} .brand{font-size:15px;gap:7px} .brand-mark{width:20px;height:20px} .lang-switch{gap:5px;font-size:11px} .nav-cta{padding:8px 12px;font-size:13px}}
+  @media(max-width:480px){.nav-inner{gap:12px;padding:14px 16px} .brand{font-size:15px;gap:7px} .brand-mark{width:20px;height:20px} .lang-switch{gap:5px;font-size:11px} .nav-cta{display:none}}
 
   .hero{padding:clamp(64px,11vw,140px) 0 clamp(48px,8vw,96px)}
   .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
@@ -155,12 +155,12 @@
   .pass-note{max-width:760px;margin:16px 0 0;color:var(--muted);font-size:13px;line-height:1.65}
   .pass-note strong{color:var(--ink)}
 
-  .terminal-frame{margin-top:64px;background:var(--code-bg);color:var(--code-fg);border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,0.04) inset,0 30px 60px -30px rgba(16,37,31,0.4),0 12px 24px -16px rgba(16,37,31,0.25)}
+  .terminal-frame{margin-top:64px;max-width:100%;background:var(--code-bg);color:var(--code-fg);border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,0.04) inset,0 30px 60px -30px rgba(16,37,31,0.4),0 12px 24px -16px rgba(16,37,31,0.25)}
   .terminal-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
   .terminal-bar .lights{display:flex;gap:6px}
   .terminal-bar .lights span{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,0.1)}
   .terminal-bar .title{font-family:var(--mono);font-size:12px;color:var(--code-dim);margin-left:8px}
-  pre.code{margin:0;padding:22px 24px 26px;font-family:var(--mono);font-size:13.5px;line-height:1.85;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  pre.code{box-sizing:border-box;max-width:100%;margin:0;padding:22px 24px 26px;font-family:var(--mono);font-size:13.5px;line-height:1.85;overflow-x:auto;-webkit-overflow-scrolling:touch}
   pre.code .c-prompt{color:var(--code-acc);user-select:none} pre.code .c-cmd{color:var(--code-fg)}
   pre.code .c-flag{color:var(--blue)} pre.code .c-str{color:var(--yellow)} pre.code .c-dim{color:var(--code-dim)}
 
@@ -246,15 +246,15 @@
       <a href="#how" class="nav-section">使い方</a>
       <a href="#faq" class="nav-section">FAQ</a>
       <span class="lang-switch" aria-label="Language">
-        <a class="lang" href="/" hreflang="zh-CN">中</a>
+        <a class="lang" href="/zh/" hreflang="zh-CN">中</a>
         <span class="sep"></span>
-        <a class="lang" href="/en/" hreflang="en">EN</a>
+        <a class="lang" href="/" hreflang="en">EN</a>
         <span class="sep"></span>
         <a class="lang lang-active" aria-current="page">日</a>
         <span class="sep"></span>
         <a class="lang" href="/ko/" hreflang="ko">한</a>
       </span>
-      <a href="https://agentmesh360.com" class="nav-extra">AgentMesh360</a>
+      <a href="https://agentmesh360.com/ja/" class="nav-extra">AgentMesh360</a>
       <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="nav-cta">GitHub を見る</a>
     </nav>
   </div>
@@ -270,7 +270,7 @@
     <div class="hero-ctas">
       <a href="https://github.com/jiyangnan/AgentMesh-Runtime" class="btn btn-ghost">GitHub を見る <span class="arrow">→</span></a>
       <a href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md" class="btn btn-ghost">AGENTS.md を読む</a>
-      <a href="https://agentmesh360.com/app/#pricing" class="btn btn-primary" data-purchase-cta>AgentMesh360 パスを購入</a>
+      <a href="https://agentmesh360.com/app/?lang=ja#pricing" class="btn btn-primary" data-purchase-cta>AgentMesh360 パスを購入</a>
     </div>
     <p class="pass-note"><strong>Runtime はローカルで無料、アカウント不要です。</strong>このパスは Lecturecast や CreatorCut など AgentMesh360 のクラウド製品向けです。</p>
 
@@ -456,13 +456,13 @@
         </svg>
         AgentMesh Runtime
       </a>
-      <div style="margin-top:8px;font-size:13.5px;color:var(--muted);">AgentMesh エコシステム（<a class="link" href="https://agentmesh360.com" style="font-size:inherit">agentmesh360.com</a>）のオープンソースプロジェクト · Apache 2.0</div>
+      <div style="margin-top:8px;font-size:13.5px;color:var(--muted);">AgentMesh エコシステム（<a class="link" href="https://agentmesh360.com/ja/" style="font-size:inherit">agentmesh360.com</a>）のオープンソースプロジェクト · Apache 2.0</div>
       <div class="foot-note">機械翻訳支援によるページです。フィードバックは <a href="https://github.com/jiyangnan/AgentMesh-Runtime/issues">GitHub issues</a> までどうぞ。</div>
     </div>
     <div class="foot-meta">
       <a href="https://github.com/jiyangnan/AgentMesh-Runtime">GitHub</a>
       <a href="https://github.com/jiyangnan/AgentMesh-Runtime/blob/main/AGENTS.md">AGENTS.md</a>
-      <a href="https://agentmesh360.com">AgentMesh360</a>
+      <a href="https://agentmesh360.com/ja/">AgentMesh360</a>
       <span>© 2026</span>
     </div>
   </div>
