@@ -2,7 +2,7 @@
 
 [English](README.md) · 中文
 
-> 🟣 **[AgentMesh](https://github.com/jiyangnan/agentmesh-core)** 生态成员 — 全部相关仓库见 [生态索引](https://github.com/jiyangnan/agentmesh-core/blob/main/docs/ECOSYSTEM.zh.md)。
+> 🟣 **[AgentMesh360](https://agentmesh360.com/)** 生态成员 — 全部相关产品见 [产品目录](https://agentmesh360.com/products/)。
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-alpha-orange.svg)](#)
