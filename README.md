@@ -2,7 +2,7 @@
 
 English · [中文](README.zh.md)
 
-> 🟣 Part of **[AgentMesh](https://github.com/jiyangnan/agentmesh-core)** — see the [ecosystem index](https://github.com/jiyangnan/agentmesh-core/blob/main/docs/ECOSYSTEM.md) for all related repos.
+> 🟣 Part of **[AgentMesh360](https://agentmesh360.com/)** — see the [product directory](https://agentmesh360.com/products/) for all related products.
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-alpha-orange.svg)](#)
