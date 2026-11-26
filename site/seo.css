@@ -58,6 +58,8 @@ tr:last-child td { border-bottom: 0; }
 .footer-inner { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 16px; }
 .footer-links a { text-decoration: none; }
+.footer-badge { margin-top: 16px; line-height: 0; }
+.footer-badge img { display: block; height: 20px; width: auto; }
 @media (max-width: 720px) {
   .container { width: min(100% - 28px, var(--max)); }
   .nav-inner { min-height: 58px; }
